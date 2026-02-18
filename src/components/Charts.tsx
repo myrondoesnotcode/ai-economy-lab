@@ -22,7 +22,7 @@ export function Charts({ history }: Props) {
   const employmentData = latest.occupations.map(o => {
     const base = baseOccupations.find(b => b.id === o.id)!
     return {
-      name: base.name.length > 26 ? base.name.slice(0, 26) + "…" : base.name,
+      name: base.name.length > 28 ? base.name.slice(0, 28) + "…" : base.name,
       fullName: base.name,
       employment: Math.round(o.employment / 1_000_000 * 10) / 10,
       baseline: Math.round(base.employment / 1_000_000 * 10) / 10,
@@ -71,12 +71,16 @@ export function Charts({ history }: Props) {
       <div className="chart-card">
         <h3 className="chart-title">Employment by Occupation (millions)</h3>
         <ResponsiveContainer width="100%" height={Math.max(400, employmentData.length * 22)}>
-          <BarChart data={employmentData} layout="vertical" margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
-            <XAxis type="number" tick={{ fontSize: 11, fill: "#9ca3af" }} />
+          <BarChart data={employmentData} layout="vertical" margin={{ left: 10, right: 20, top: 5, bottom: 24 }}>
+            <XAxis
+              type="number"
+              tick={{ fontSize: 11, fill: "#9ca3af" }}
+              label={{ value: "workers (millions)", position: "insideBottomRight", offset: -4, fontSize: 10, fill: "#6b7280" }}
+            />
             <YAxis
               type="category"
               dataKey="name"
-              width={190}
+              width={210}
               tick={{ fontSize: 10, fill: "#d1d5db" }}
             />
             <Tooltip content={<BarTooltip />} />
