@@ -1,0 +1,101 @@
+{
+  "kRegulationDrag": 0.6,
+  "slowdownMax": 0.5,
+  "slowdownThreshold": 40,
+  "stabilityAdoptionMinMultiplier": 0.1,
+  "stabilityAdoptionMaxMultiplier": 1.0,
+  "kSubstitution": 0.12,
+  "laborProtectionLayoffDamp": 0.5,
+  "employmentFloorRatio": 0.2,
+  "kComplementarityWage": 0.06,
+  "kFoodFromLogistics": 0.4,
+  "kEnergyPassThrough": 0.15,
+  "kIneqFromAI": 0.04,
+  "kConcentrationLaborShare": 0.08,
+  "gdpIndexMin": 50,
+  "gdpIndexMax": 200,
+  "foodPriceIndexMin": 0.8,
+  "foodPriceIndexMax": 3.0,
+  "inequalityIndexMin": 0.5,
+  "inequalityIndexMax": 3.0,
+  "stabilityMin": 0,
+  "stabilityMax": 100,
+  "laborForce": 170000000,
+  "stabilityWeightUnemployment": 1.8,
+  "stabilityWeightFoodInflation": 0.8,
+  "stabilityWeightInequality": 6.0,
+  "sliders": {
+    "aiCapability": {
+      "label": "AI Capability",
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "default": 0.3,
+      "tooltip": "Overall power of AI systems. Higher values accelerate automation and wage gains for complementary roles."
+    },
+    "adoptionSpeed": {
+      "label": "Adoption Speed",
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "default": 0.4,
+      "tooltip": "How quickly businesses deploy AI. Drives effective automation rate alongside AI capability."
+    },
+    "regulation": {
+      "label": "Regulation",
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "default": 0.3,
+      "tooltip": "Government AI regulation stringency. Slows adoption and reduces job displacement."
+    },
+    "retraining": {
+      "label": "Retraining Programs",
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "default": 0.2,
+      "tooltip": "Investment in worker retraining. Cushions unemployment but does not appear in core equations yet (v0.1 placeholder)."
+    },
+    "transfers": {
+      "label": "Social Transfers",
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "default": 0.2,
+      "tooltip": "Government transfer payments (UBI-style). Stabilizes food prices and inequality (v0.1 placeholder)."
+    },
+    "laborProtection": {
+      "label": "Labor Protections",
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "default": 0.3,
+      "tooltip": "Strength of labor laws against layoffs. Reduces per-year job loss rate."
+    },
+    "corporateConcentration": {
+      "label": "Corporate Concentration",
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "default": 0.4,
+      "tooltip": "Market power of large firms. Suppresses wage growth and increases inequality."
+    },
+    "energyCost": {
+      "label": "Energy Cost Shock",
+      "min": -0.5,
+      "max": 0.5,
+      "step": 0.01,
+      "default": 0.0,
+      "tooltip": "Energy price deviation from baseline. Positive = higher costs, driving food price inflation."
+    },
+    "supplyChainResilience": {
+      "label": "Supply Chain Resilience",
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "default": 0.5,
+      "tooltip": "Robustness of logistics networks. Higher values dampen food price spikes from logistics job loss."
+    }
+  }
+}
