@@ -317,6 +317,135 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* Info panel (click-to-expand explanation) */
+.info-panel {
+  position: relative;
+}
+
+.info-panel-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 3px 8px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.info-panel-toggle:hover,
+.info-panel-open .info-panel-toggle {
+  border-color: var(--accent);
+  color: var(--accent2);
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.info-panel-icon {
+  font-size: 0.75rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.info-panel-label {
+  line-height: 1;
+}
+
+.info-panel-body {
+  margin-top: 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  animation: fadeSlideIn 0.15s ease;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.info-panel-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--accent2);
+  margin-bottom: 10px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.info-panel-content {
+  font-size: 0.79rem;
+  color: var(--muted);
+  line-height: 1.65;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-panel-content p { margin: 0; }
+
+.info-panel-content ul {
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+}
+
+.info-panel-content strong {
+  color: var(--text);
+}
+
+.info-panel-content em {
+  color: var(--accent2);
+  font-style: normal;
+}
+
+/* Chart card header with title + info panel side by side */
+.chart-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.chart-card-header .chart-title {
+  margin-bottom: 0;
+  flex: 1;
+}
+
+/* Metric card header */
+.metric-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.metric-card-header .metric-label {
+  margin-bottom: 0;
+}
+
+.metric-info .info-panel-toggle {
+  padding: 2px 6px;
+  font-size: 0.65rem;
+}
+
+.metric-info .info-panel-body {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  margin-top: 6px;
+}
+
 /* Charts */
 .charts {
   display: flex;

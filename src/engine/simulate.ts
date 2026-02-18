@@ -95,8 +95,9 @@ export function step(
     const base = baseOccupations.find(o => o.id === occState.id)!
 
     // 7.2 Job loss rate
-    // Retraining reduces effective displacement by cushioning workforce transitions
-    const retrainingDamp = retraining * 0.3
+    // Retraining reduces displacement rate AND raises the effective employment floor
+    // (retrained workers find adjacent roles instead of staying unemployed)
+    const retrainingDamp = retraining * 0.55  // up to 55% reduction in job loss rate at max retraining
     const jobLossRate = clamp(
       aiCapability * effectiveAdoption * base.routineScore * (1 - base.socialScore) *
         kSubstitution * (1 - laborProtection * laborProtectionLayoffDamp) * (1 - retrainingDamp),
@@ -104,8 +105,11 @@ export function step(
       0.5
     )
 
+    // Retraining also lifts the employment floor: workers transition into new roles
+    // rather than hitting the hard floor of permanent unemployment
+    const effectiveFloor = employmentFloorRatio + retraining * (0.5 - employmentFloorRatio)
     const newEmployment = Math.max(
-      base.employment * employmentFloorRatio,
+      base.employment * effectiveFloor,
       occState.employment * (1 - jobLossRate)
     )
 

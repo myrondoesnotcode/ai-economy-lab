@@ -4,9 +4,9 @@
   "slowdownThreshold": 40,
   "stabilityAdoptionMinMultiplier": 0.1,
   "stabilityAdoptionMaxMultiplier": 1.0,
-  "kSubstitution": 0.05,
+  "kSubstitution": 0.18,
   "laborProtectionLayoffDamp": 0.5,
-  "employmentFloorRatio": 0.2,
+  "employmentFloorRatio": 0.05,
   "kComplementarityWage": 0.06,
   "kFoodFromLogistics": 0.10,
   "kEnergyPassThrough": 0.08,
@@ -55,7 +55,7 @@
       "max": 1,
       "step": 0.01,
       "default": 0.2,
-      "tooltip": "Investment in worker retraining. Cushions unemployment but does not appear in core equations yet (v0.1 placeholder)."
+      "tooltip": "Investment in worker retraining. Reduces job loss rate and raises the employment floor — workers who retrain find new roles rather than staying unemployed."
     },
     "transfers": {
       "label": "Social Transfers",
@@ -63,7 +63,7 @@
       "max": 1,
       "step": 0.01,
       "default": 0.2,
-      "tooltip": "Government transfer payments (UBI-style). Stabilizes food prices and inequality (v0.1 placeholder)."
+      "tooltip": "Government transfer payments (UBI-style). Compresses inequality, dampens food price inflation, and stabilizes household spending."
     },
     "laborProtection": {
       "label": "Labor Protections",

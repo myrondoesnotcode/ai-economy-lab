@@ -2,6 +2,7 @@ import type { SimulationState } from "../engine/types"
 import { StabilityMeter } from "./StabilityMeter"
 import { Charts } from "./Charts"
 import { EventLog } from "./EventLog"
+import { InfoPanel } from "./InfoPanel"
 
 interface Props {
   history: SimulationState[]
@@ -14,12 +15,16 @@ interface MetricCardProps {
   sub?: string
   color?: string
   tooltip?: string
+  info?: React.ReactNode
 }
 
-function MetricCard({ label, value, sub, color, tooltip }: MetricCardProps) {
+function MetricCard({ label, value, sub, color, tooltip, info }: MetricCardProps) {
   return (
     <div className="metric-card" title={tooltip}>
-      <div className="metric-label">{label}</div>
+      <div className="metric-card-header">
+        <div className="metric-label">{label}</div>
+        {info && <div className="metric-info">{info}</div>}
+      </div>
       <div className="metric-value" style={{ color: color ?? "#f9fafb" }}>{value}</div>
       {sub && <div className="metric-sub">{sub}</div>}
     </div>
@@ -62,28 +67,72 @@ export function Dashboard({ history, currentYear }: Props) {
           value={latest.gdpIndex.toFixed(1)}
           sub="baseline = 100"
           color={gdpColor}
-          tooltip="GDP proxy based on employment × wages across all tracked occupations, normalized to year-0 baseline."
+          info={
+            <InfoPanel title="GDP Index">
+              <p>Total economic output as an index, where 100 = the starting year (2025).</p>
+              <ul>
+                <li><strong>Above 100</strong> — AI productivity gains are outpacing job losses. The economy is growing.</li>
+                <li><strong>Below 100</strong> — displacement is shrinking output. Workers who lost their jobs can't spend, which contracts the economy further.</li>
+              </ul>
+              <p><strong>How it's calculated:</strong> Sum of (workers × wages) across all 25 occupations, divided by the year-one total. It rises when high-skill wages surge, even if many people are unemployed — so a high GDP doesn't necessarily mean widespread prosperity.</p>
+            </InfoPanel>
+          }
         />
         <MetricCard
           label="Unemployment"
           value={`${(latest.unemploymentRate * 100).toFixed(1)}%`}
           sub="structural baseline ~8%"
           color={unemColor}
-          tooltip="Share of labor force without tracked employment. ~8% is structural baseline (frictional + untracked sectors). Above 12% indicates AI-driven displacement."
+          info={
+            <InfoPanel title="Unemployment Rate">
+              <p>The share of the labor force (48.7 million tracked workers) without employment in one of the 25 modeled occupations.</p>
+              <ul>
+                <li><strong>~8% is structural baseline</strong> — this represents frictional unemployment (workers between jobs) and people in sectors not tracked by this model. It exists even before any AI disruption.</li>
+                <li><strong>Above 12%</strong> — displacement from AI automation is now measurably above normal churn.</li>
+                <li><strong>Above 15%</strong> — serious structural unemployment. Safety nets are under strain.</li>
+                <li><strong>Above 20%</strong> — crisis territory, comparable to the Great Depression peak.</li>
+              </ul>
+              <p><strong>What lowers it:</strong> Retraining programs (which place workers in new roles), labor protections (which slow layoffs), and regulation (which slows AI adoption). Lower AI capability or adoption speed directly reduces displacement.</p>
+            </InfoPanel>
+          }
         />
         <MetricCard
           label="Food Price Index"
           value={latest.foodPriceIndex.toFixed(3)}
           sub="baseline = 1.000"
           color={foodColor}
-          tooltip="Relative food prices driven by logistics workforce shortfall and energy cost pass-through. 1.0 = baseline; 1.5 = 50% more expensive."
+          info={
+            <InfoPanel title="Food Price Index">
+              <p>Relative cost of food compared to the starting year, where 1.000 = no change.</p>
+              <ul>
+                <li><strong>1.000</strong> — food costs the same as in 2025.</li>
+                <li><strong>1.200</strong> — 20% more expensive. Noticeable but manageable.</li>
+                <li><strong>1.500</strong> — 50% more expensive. Significant household budget pressure.</li>
+                <li><strong>2.000+</strong> — food has doubled. Severe food insecurity risk, especially for lower-income households.</li>
+              </ul>
+              <p><strong>What drives it:</strong> When logistics workers (truck drivers, warehouse staff, freight movers) are displaced, fewer hands move food from farms to stores — causing delays, spoilage, and cost increases. Energy price shocks compound this.</p>
+              <p><strong>What moderates it:</strong> High supply chain resilience, social transfer payments, and keeping energy costs low.</p>
+            </InfoPanel>
+          }
         />
         <MetricCard
           label="Inequality Index"
           value={latest.inequalityIndex.toFixed(2)}
           sub="baseline = 1.00"
           color={ineqColor}
-          tooltip="Wage/income dispersion index. Rises when AI displaces routine workers while boosting wages for high-complementarity roles. Corporate concentration amplifies the gap."
+          info={
+            <InfoPanel title="Inequality Index">
+              <p>Measures how concentrated income and wages have become, relative to the pre-AI baseline of 1.00.</p>
+              <ul>
+                <li><strong>1.00</strong> — same distribution as the starting year.</li>
+                <li><strong>1.40</strong> — meaningfully more unequal. Two distinct labor markets forming.</li>
+                <li><strong>1.80</strong> — sharply unequal. AI gains concentrated at the top; displaced workers falling further behind.</li>
+                <li><strong>2.00+</strong> — severe. Associated with political instability and demand collapse.</li>
+              </ul>
+              <p><strong>What widens it:</strong> AI capability (boosts wages for high-skill workers while displacing low-skill), and corporate concentration (firms capture AI productivity gains rather than sharing them).</p>
+              <p><strong>What compresses it:</strong> Social transfers directly reduce inequality by redistributing income to displaced workers.</p>
+            </InfoPanel>
+          }
         />
       </div>
 
