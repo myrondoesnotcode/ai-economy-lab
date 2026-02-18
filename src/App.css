@@ -280,10 +280,11 @@ body {
   gap: 6px;
 }
 
-.stability-info-hint {
-  font-size: 0.78rem;
+.stability-breakdown {
+  font-size: 0.7rem;
+  font-weight: 400;
   color: var(--muted);
-  cursor: help;
+  font-variant-numeric: tabular-nums;
 }
 
 .stability-badge {

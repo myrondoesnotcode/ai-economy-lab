@@ -46,12 +46,9 @@ export function Dashboard({ history, currentYear }: Props) {
   const ineqColor = latest.inequalityIndex > 2.0 ? "#ef4444"
     : latest.inequalityIndex > 1.4 ? "#f97316" : "#22c55e"
 
-  const stabilityTooltip =
-    `Stability = 100 − (unemployment × 1.8) − (food inflation × 0.8) − (inequality deviation × 8.0)\n` +
-    `Current breakdown:\n` +
-    `  Unemployment penalty: −${(latest.unemploymentRate * 100 * 1.8).toFixed(1)}\n` +
-    `  Food price penalty:   −${((latest.foodPriceIndex - 1) * 100 * 0.8).toFixed(1)}\n` +
-    `  Inequality penalty:   −${((latest.inequalityIndex - 1.0) * 8.0).toFixed(1)}`
+  const unemploymentPenalty = latest.unemploymentRate * 100 * 1.8
+  const foodPenalty = (latest.foodPriceIndex - 1) * 100 * 0.8
+  const inequalityPenalty = (latest.inequalityIndex - 1.0) * 8.0
 
   return (
     <main className="dashboard">
@@ -136,7 +133,12 @@ export function Dashboard({ history, currentYear }: Props) {
         />
       </div>
 
-      <StabilityMeter value={latest.stabilityIndex} tooltip={stabilityTooltip} />
+      <StabilityMeter
+        value={latest.stabilityIndex}
+        unemploymentPenalty={unemploymentPenalty}
+        foodPenalty={foodPenalty}
+        inequalityPenalty={inequalityPenalty}
+      />
 
       <Charts history={history} />
 
