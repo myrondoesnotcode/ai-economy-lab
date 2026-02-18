@@ -1,5 +1,5 @@
 import type { SimulationState, SliderInputs, ModelParams } from "./types"
-import { occupations as baseOccupations } from "../data/occupations"
+import { occupations as baseOccupations, BASE_LABOR_FORCE } from "../data/occupations"
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value))
@@ -7,7 +7,7 @@ function clamp(value: number, min: number, max: number): number {
 
 export function buildInitialState(): SimulationState {
   const totalEmployment = baseOccupations.reduce((sum, o) => sum + o.employment, 0)
-  const laborForce = 170_000_000
+  const laborForce = BASE_LABOR_FORCE
   const unemploymentRate = (laborForce - totalEmployment) / laborForce
 
   const baseGDP = baseOccupations.reduce((sum, o) => sum + o.employment * o.meanWage, 0)
@@ -149,8 +149,8 @@ export function step(
     baseOccupations.reduce((sum, o) => sum + o.routineScore, 0) / baseOccupations.length
 
   let newInequalityIndex = state.inequalityIndex +
-    aiCapability * (avgComplementarity - avgRoutine) * kIneqFromAI
-  newInequalityIndex *= 1 + corporateConcentration * kConcentrationLaborShare
+    aiCapability * (avgRoutine - avgComplementarity) * kIneqFromAI +  // sign flipped: AI widens inequality
+    corporateConcentration * kConcentrationLaborShare                   // additive, not multiplicative
   newInequalityIndex = clamp(newInequalityIndex, inequalityIndexMin, inequalityIndexMax)
 
   // 7.8 Stability index
@@ -158,7 +158,7 @@ export function step(
     100 -
       newUnemploymentRate * 100 * stabilityWeightUnemployment -
       (newFoodPriceIndex - 1) * 100 * stabilityWeightFoodInflation -
-      newInequalityIndex * stabilityWeightInequality,
+      (newInequalityIndex - 1.0) * stabilityWeightInequality,  // penalize deviation from baseline, not absolute
     stabilityMin,
     stabilityMax
   )

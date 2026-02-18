@@ -1,6 +1,6 @@
 import type { Occupation } from "../engine/types"
 
-export const BASE_LABOR_FORCE = 170_000_000
+export const BASE_LABOR_FORCE = 44_782_609
 
 export const occupations: Occupation[] = [
   {
