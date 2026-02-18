@@ -173,116 +173,314 @@ export function step(
     stabilityMax
   )
 
-  // ── Event log (one entry per year, varied phrasing) ──────────────────────
+  // ── Event log — rich narrative entries ───────────────────────────────────
   const events: string[] = []
   const yr = nextYear
 
-  // AI substitution events — vary message based on severity
-  const routineOccs = baseOccupations.filter(o => o.routineScore > 0.7).map(o => o.name)
-  const mostRoutine = routineOccs[0] ?? "routine workers"
+  // Helper: find the occupation currently losing the most workers in absolute terms
+  const biggestLoser = newOccupations.reduce((worst, o) => {
+    const base = baseOccupations.find(b => b.id === o.id)!
+    const lost = base.employment - o.employment
+    const worstBase = baseOccupations.find(b => b.id === worst.id)!
+    return lost > (worstBase.employment - worst.employment) ? o : worst
+  }, newOccupations[0])
+  const biggestLoserBase = baseOccupations.find(b => b.id === biggestLoser.id)!
+  const biggestLoserLost = Math.round((biggestLoserBase.employment - biggestLoser.employment) / 1000)
+  const biggestLoserPct = ((biggestLoserBase.employment - biggestLoser.employment) / biggestLoserBase.employment * 100).toFixed(1)
+
+  // Helper: find the occupation gaining the most in wage terms
+  const biggestWinner = newOccupations.reduce((best, o) => {
+    const base = baseOccupations.find(b => b.id === o.id)!
+    const wageGain = o.wage - base.meanWage
+    const bestBase = baseOccupations.find(b => b.id === best.id)!
+    return wageGain > (best.wage - bestBase.meanWage) ? o : best
+  }, newOccupations[0])
+  const biggestWinnerBase = baseOccupations.find(b => b.id === biggestWinner.id)!
+  const biggestWinnerWageGain = Math.round(biggestWinner.wage - biggestWinnerBase.meanWage)
+  const biggestWinnerWagePct = ((biggestWinner.wage / biggestWinnerBase.meanWage - 1) * 100).toFixed(1)
+
+  const totalDisplaced = Math.round((newOccupations.reduce((s, o) => {
+    const base = baseOccupations.find(b => b.id === o.id)!
+    return s + Math.max(0, base.employment - o.employment)
+  }, 0)) / 1000)
+
+  // ── AI substitution narrative ─────────────────────────────────────────────
   if (aiCapability > 0.3 && effectiveAdoption > 0.2) {
-    const displaced = newOccupations.find(o => {
-      const base = baseOccupations.find(b => b.id === o.id)!
-      return base.routineScore > 0.8
-    })
-    const dispBase = displaced ? baseOccupations.find(b => b.id === displaced.id)! : null
-    const dispPct = displaced && dispBase
-      ? (((dispBase.employment - displaced.employment) / dispBase.employment) * 100).toFixed(1)
-      : null
-
+    const adoptionPct = (effectiveAdoption * 100).toFixed(0)
     if (aiCapability > 0.7) {
-      events.push(`${yr}: Heavy automation wave — ${mostRoutine} down ${dispPct ? dispPct + "%" : "significantly"} from baseline.`)
+      events.push(
+        `${yr} — Automation Surge: AI systems operating at ${(aiCapability * 100).toFixed(0)}% capability are tearing through routine work. ` +
+        `${biggestLoserBase.name} has shed ~${biggestLoserLost.toLocaleString()}k positions this year alone (${biggestLoserPct}% below its pre-AI baseline), ` +
+        `and across all tracked occupations roughly ${totalDisplaced.toLocaleString()}k jobs have been eliminated from baseline levels. ` +
+        `The speed of displacement is outpacing most workers' ability to retrain — expect unemployment pressure to intensify.`
+      )
     } else if (aiCapability > 0.5) {
-      events.push(`${yr}: AI adoption accelerating; ${mostRoutine} seeing notable job displacement.`)
+      events.push(
+        `${yr} — Displacement Accelerating: With AI deployment at ${adoptionPct}% effective adoption, ` +
+        `${biggestLoserBase.name} is absorbing the sharpest cuts — down ${biggestLoserPct}% from baseline, ` +
+        `representing roughly ${biggestLoserLost.toLocaleString()}k fewer positions. ` +
+        `Companies are automating call centers, checkout lines, and back-office workflows faster than new roles are being created. ` +
+        `Workers in highly routine jobs are facing a narrowing window to find alternatives.`
+      )
     } else {
-      events.push(`${yr}: ${mostRoutine} employment declining as AI handles routine tasks.`)
+      events.push(
+        `${yr} — Early Automation Pressure: AI tools are beginning to visibly affect hiring. ` +
+        `${biggestLoserBase.name} is down ${biggestLoserPct}% from baseline as businesses pilot automation in lower-risk workflows first. ` +
+        `The net effect is subtle but cumulative — each year that passes without retraining investment widens the gap between those who can adapt and those who cannot.`
+      )
     }
   }
 
-  // Wage growth events for complementary roles
-  const compOccs = baseOccupations.filter(o => o.complementarityScore > 0.7).map(o => o.name)
-  const mostComp = compOccs[0] ?? "high-skill workers"
-  if (aiCapability > 0.4) {
-    const wageBoost = (aiCapability * 0.8 * kComplementarityWage * 100).toFixed(1)
+  // ── Wage growth narrative for complementary roles ─────────────────────────
+  if (aiCapability > 0.4 && biggestWinnerWageGain > 500) {
+    const wageGainK = (biggestWinnerWageGain / 1000).toFixed(1)
     if (aiCapability > 0.7) {
-      events.push(`${yr}: Skilled workers thriving — ${mostComp} wages up ~${wageBoost}% from AI leverage.`)
+      events.push(
+        `${yr} — The AI Premium: A sharp divide is forming between those who wield AI and those displaced by it. ` +
+        `${biggestWinnerBase.name} are commanding $${wageGainK}k more per year than their pre-AI baseline (+${biggestWinnerWagePct}%), ` +
+        `as each worker now handles tasks that previously required teams. ` +
+        `Firms are competing fiercely for talent that can direct and validate AI output — but this productivity windfall is not being shared broadly.`
+      )
     } else {
-      events.push(`${yr}: Wages rising for ${mostComp} as AI tools boost productivity.`)
+      events.push(
+        `${yr} — Productivity Dividend (Uneven): AI tools are making skilled workers measurably more productive. ` +
+        `${biggestWinnerBase.name} wages are up $${wageGainK}k from baseline (+${biggestWinnerWagePct}%), ` +
+        `reflecting genuine output gains as AI handles the analytical grunt work. ` +
+        `The catch: these gains are concentrated among workers with the skills to leverage the tools — ` +
+        `lower-wage workers in routine roles see none of this upside.`
+      )
     }
   }
 
-  // Logistics / food price events
+  // ── Logistics / food price narratives ─────────────────────────────────────
   if (logisticsShortfall > 0.15) {
-    events.push(`${yr}: Severe logistics shortfall (${(logisticsShortfall * 100).toFixed(0)}% below baseline) pushing food prices higher.`)
+    const shortPct = (logisticsShortfall * 100).toFixed(0)
+    const foodImpact = (logisticsShortfall * kFoodFromLogistics * (1 - supplyChainResilience) * 100).toFixed(1)
+    events.push(
+      `${yr} — Supply Chain Strain: The logistics workforce is ${shortPct}% below its pre-automation baseline — ` +
+      `warehouses and freight networks are struggling to find workers willing to compete with low-wage automated alternatives. ` +
+      `Fewer hands moving goods means longer delivery windows and spoilage risk, pushing food prices up an estimated +${foodImpact}% this year alone. ` +
+      `Grocery bills are rising fastest in lower-income households, which spend the highest share of income on food.`
+    )
   } else if (logisticsShortfall > 0.05) {
-    events.push(`${yr}: Food prices rising — logistics workforce down ${(logisticsShortfall * 100).toFixed(0)}% from baseline.`)
+    const shortPct = (logisticsShortfall * 100).toFixed(0)
+    events.push(
+      `${yr} — Logistics Workforce Thinning: Automation is quietly hollowing out freight and warehousing roles — ` +
+      `currently ${shortPct}% below baseline — and the effects are trickling into food prices. ` +
+      `Most consumers haven't noticed yet, but the margin between stable supply chains and disruption is narrowing. ` +
+      `Higher supply chain resilience investment could absorb this; without it, further job losses here compound directly into grocery costs.`
+    )
   }
 
   if (energyCost > 0.2) {
-    events.push(`${yr}: Energy cost spike (+${(energyCost * 100).toFixed(0)}%) adding ${(energyCost * kEnergyPassThrough * 100).toFixed(1)}% to food prices.`)
+    const foodEffect = (energyCost * kEnergyPassThrough * 100).toFixed(1)
+    events.push(
+      `${yr} — Energy Shock: Energy prices are ${(energyCost * 100).toFixed(0)}% above baseline — ` +
+      `a significant external shock that passes through directly to transportation and food production costs (+${foodEffect}% on food this year). ` +
+      `This compounds any existing logistics workforce shortfall. ` +
+      `Households already squeezed by unemployment are now facing higher prices at the checkout line simultaneously.`
+    )
   } else if (energyCost > 0.1) {
-    events.push(`${yr}: Energy cost pressure passed through to food prices (+${(energyCost * kEnergyPassThrough * 100).toFixed(1)}%).`)
+    const foodEffect = (energyCost * kEnergyPassThrough * 100).toFixed(1)
+    events.push(
+      `${yr} — Energy Headwinds: Moderately elevated energy costs (+${(energyCost * 100).toFixed(0)}% above baseline) ` +
+      `are adding +${foodEffect}% to food prices via transport and refrigeration cost pass-through. ` +
+      `Not yet a crisis, but it erodes the purchasing power of workers already facing stagnant wages or unemployment.`
+    )
   } else if (energyCost < -0.1) {
-    events.push(`${yr}: Falling energy costs easing food price pressure.`)
+    events.push(
+      `${yr} — Energy Tailwind: Falling energy costs (${(energyCost * 100).toFixed(0)}% below baseline) are providing unexpected relief. ` +
+      `Cheaper transport and refrigeration are dampening food price inflation, giving households a small but real buffer. ` +
+      `This partially offsets wage stagnation and helps stabilize purchasing power at the lower end of the income distribution.`
+    )
   }
 
-  // Unemployment events
+  // ── Unemployment narratives ───────────────────────────────────────────────
+  const unemPct = (newUnemploymentRate * 100).toFixed(1)
+  const displaceAboveStructural = Math.round(Math.max(0, newUnemploymentRate - 0.08) * params.laborForce / 1000)
   if (newUnemploymentRate > 0.20) {
-    events.push(`${yr}: Unemployment crisis — ${(newUnemploymentRate * 100).toFixed(1)}% of workforce displaced.`)
+    events.push(
+      `${yr} — ⚠ Unemployment Crisis: ${unemPct}% of the labor force is without work — ` +
+      `roughly ${displaceAboveStructural.toLocaleString()}k people above the structural baseline, most of them former routine workers with few adjacent options. ` +
+      `Social safety nets are under severe stress. Historical precedent suggests unemployment at this scale, ` +
+      `sustained over several years, leads to long-term scarring: workers exit the labor force permanently, ` +
+      `communities built around displaced industries decay, and political pressure for intervention intensifies sharply.`
+    )
   } else if (newUnemploymentRate > 0.15) {
-    events.push(`${yr}: Unemployment surging to ${(newUnemploymentRate * 100).toFixed(1)}%, straining social systems.`)
+    events.push(
+      `${yr} — Unemployment Surging: At ${unemPct}%, unemployment is well above the structural baseline — ` +
+      `approximately ${displaceAboveStructural.toLocaleString()}k workers displaced beyond what frictional churn accounts for. ` +
+      `The jobs that were lost were not the same jobs that are being created. ` +
+      `Retraining programs are underfunded relative to the scale of the problem; without intervention, this rate tends to be self-reinforcing as spending power falls and businesses contract further.`
+    )
   } else if (newUnemploymentRate > 0.12) {
-    events.push(`${yr}: Unemployment elevated at ${(newUnemploymentRate * 100).toFixed(1)}%, above structural baseline.`)
+    events.push(
+      `${yr} — Unemployment Elevated: The rate has climbed to ${unemPct}%, roughly ${displaceAboveStructural.toLocaleString()}k workers above structural norms. ` +
+      `This is the early visible signal of AI displacement — the headline number understates the problem, ` +
+      `as many displaced workers have moved to part-time or gig work that doesn't register in these figures. ` +
+      `Labor market slack at this level suppresses wage growth for everyone still employed.`
+    )
   }
 
-  // Inequality events
+  // ── Inequality narratives ─────────────────────────────────────────────────
   if (newInequalityIndex > 2.0) {
-    events.push(`${yr}: Severe inequality (index ${newInequalityIndex.toFixed(2)}) — top earners capturing most AI gains.`)
+    events.push(
+      `${yr} — ⚠ Severe Inequality: The inequality index has reached ${newInequalityIndex.toFixed(2)} — ` +
+      `more than double the pre-AI baseline. AI productivity gains are being captured almost entirely at the top. ` +
+      `A software developer or ML engineer earns many multiples of what a displaced cashier or data entry worker earns on unemployment. ` +
+      `At this level, inequality itself becomes a drag on aggregate demand: the workers who lost their jobs had high marginal propensity to consume, ` +
+      `and concentrating income at the top reduces overall spending in the economy.`
+    )
+  } else if (newInequalityIndex > 1.6) {
+    events.push(
+      `${yr} — Inequality Widening Sharply: Wage dispersion has reached ${newInequalityIndex.toFixed(2)}x baseline. ` +
+      `The gap between AI-complementary workers (whose wages are rising) and AI-displaced workers (facing unemployment or wage cuts) is becoming structural. ` +
+      `High corporate concentration amplifies this: firms with market power pocket the AI productivity gains rather than passing them to workers or consumers. ` +
+      `Without redistribution, this gap tends to widen further each year.`
+    )
   } else if (newInequalityIndex > 1.4) {
-    events.push(`${yr}: Inequality rising (${newInequalityIndex.toFixed(2)}). Corporate concentration amplifying wage gap.`)
+    events.push(
+      `${yr} — Growing Divide: The inequality index is at ${newInequalityIndex.toFixed(2)}, up from the 1.0 baseline. ` +
+      `Two distinct labor markets are emerging: high-skill workers whose productivity — and compensation — is amplified by AI, ` +
+      `and routine workers facing stagnation or displacement. ` +
+      `The divergence is still correctable with targeted policy, but it compounds if left unaddressed.`
+    )
   }
 
-  // Regulation events
+  // ── Regulation narratives ─────────────────────────────────────────────────
   if (regulation > 0.7) {
-    events.push(`${yr}: Strong AI regulation constraining adoption rate this year.`)
+    const dragEffect = (regulation * kRegulationDrag * 100).toFixed(0)
+    events.push(
+      `${yr} — Heavy Regulation in Effect: Government AI policy is imposing significant friction on deployment — ` +
+      `reducing effective adoption by ~${dragEffect}% this year. ` +
+      `Compliance requirements, mandatory impact assessments, and sector-specific restrictions are slowing rollout. ` +
+      `This buys time for workers and institutions to adapt, but comes at a cost: firms operating in less-regulated jurisdictions gain a competitive edge, ` +
+      `and the productivity gains that AI enables are deferred.`
+    )
   } else if (regulation > 0.6) {
-    events.push(`${yr}: Regulatory friction slowing AI deployment across sectors.`)
+    events.push(
+      `${yr} — Regulatory Friction: Moderate AI regulation is slowing deployment in several sectors. ` +
+      `Policymakers are threading a difficult needle — enough oversight to limit the worst displacement, ` +
+      `not so much that innovation migrates offshore. The current balance is reducing adoption speed meaningfully without halting progress. ` +
+      `Whether this is sufficient to prevent mass unemployment depends heavily on how fast retraining can scale.`
+    )
   }
 
-  // Retraining events
-  if (retraining > 0.5 && aiCapability > 0.3) {
-    events.push(`${yr}: Active retraining programs cushioning displacement for some workers.`)
+  // ── Retraining narratives ─────────────────────────────────────────────────
+  if (retraining > 0.6 && aiCapability > 0.3) {
+    const cushionPct = (retraining * 30).toFixed(0)
+    events.push(
+      `${yr} — Retraining Programs Absorbing Shock: With ${(retraining * 100).toFixed(0)}% retraining investment, ` +
+      `displacement is running ~${cushionPct}% below what it would be without intervention. ` +
+      `Community colleges, employer-sponsored upskilling, and federal transition grants are placing workers into adjacent roles. ` +
+      `The pipeline is imperfect — not everyone retrained as a data analyst finds work — but the aggregate effect is measurable. ` +
+      `Sustaining this investment is politically difficult when fiscal pressure is rising.`
+    )
+  } else if (retraining > 0.3 && aiCapability > 0.3) {
+    events.push(
+      `${yr} — Limited Retraining Underway: Workforce development programs are operating but at insufficient scale. ` +
+      `For every worker successfully transitioned into a new role, several more are still waiting — on waitlists, in temporary work, or leaving the labor force altogether. ` +
+      `At current displacement rates, the retraining pipeline would need to be ${Math.round((1 - retraining) * 100)}% larger to fully absorb new unemployment.`
+    )
   }
 
-  // Transfers events
-  if (transfers > 0.5) {
-    events.push(`${yr}: Social transfers helping stabilize household incomes amid disruption.`)
+  // ── Transfers narratives ──────────────────────────────────────────────────
+  if (transfers > 0.6) {
+    events.push(
+      `${yr} — Social Transfers Providing Cushion: Transfer payments at ${(transfers * 100).toFixed(0)}% of scale are meaningfully compressing inequality ` +
+      `and stabilizing household spending. Displaced workers are maintaining consumption above poverty levels, ` +
+      `which prevents the secondary demand collapse that amplifies recessions. ` +
+      `The fiscal cost is significant, and there is ongoing political debate about sustainability — ` +
+      `but the stability data shows the tradeoff is paying off for now.`
+    )
+  } else if (transfers > 0.3) {
+    events.push(
+      `${yr} — Modest Transfer Support: Social transfers are providing a partial floor for displaced workers ` +
+      `but are not large enough to fully offset the income loss from automation. ` +
+      `Food insecurity and housing stress are rising in communities hit hardest by displacement, ` +
+      `even as aggregate indicators like GDP look stable — a reminder that averages can obscure severe local conditions.`
+    )
   }
 
-  // Stability events
+  // ── Stability narratives ──────────────────────────────────────────────────
   if (newStabilityIndex < 30) {
-    events.push(`${yr}: ⚠ CRITICAL: Social stability collapsing (${newStabilityIndex.toFixed(0)}/100).`)
+    events.push(
+      `${yr} — ⚠ CRITICAL: Social Stability at ${newStabilityIndex.toFixed(0)}/100. ` +
+      `The combination of mass unemployment, food price spikes, and extreme inequality has pushed social cohesion to a breaking point. ` +
+      `Historical parallels to this convergence — the Great Depression, deindustrialization shocks of the 1980s — suggest ` +
+      `that without immediate and dramatic intervention, the consequences extend well beyond economics: ` +
+      `political extremism rises, institutions lose legitimacy, and recovery timelines lengthen from years to decades.`
+    )
   } else if (newStabilityIndex < 50) {
-    events.push(`${yr}: WARNING: Social stability critically low (${newStabilityIndex.toFixed(0)}/100).`)
+    events.push(
+      `${yr} — WARNING: Stability at ${newStabilityIndex.toFixed(0)}/100. ` +
+      `Public trust in institutions is eroding. Workers who expected AI to create opportunity are experiencing it as pure displacement, ` +
+      `and the political center is struggling to hold. ` +
+      `Polling in this model's analogue societies shows surging support for protectionist policies, automation taxes, and populist platforms. ` +
+      `The window for managed, stable transition is narrowing.`
+    )
   } else if (newStabilityIndex < 65) {
-    events.push(`${yr}: Social stability under stress (${newStabilityIndex.toFixed(0)}/100).`)
+    events.push(
+      `${yr} — Stability Under Stress: At ${newStabilityIndex.toFixed(0)}/100, the economy is functioning but showing strain. ` +
+      `Visible signs: longer unemployment spells in former manufacturing and service hubs, stagnant median wages despite rising GDP, ` +
+      `and growing geographic divergence between tech-hub prosperity and hollowed-out communities elsewhere. ` +
+      `These are lagging indicators — the underlying pressures driving them are already baked in.`
+    )
   }
 
-  // GDP events
-  if (newGDPIndex > 130) {
-    events.push(`${yr}: GDP index surging to ${newGDPIndex.toFixed(1)} — productivity gains outpacing displacement.`)
+  // ── GDP narratives ────────────────────────────────────────────────────────
+  if (newGDPIndex > 140) {
+    events.push(
+      `${yr} — Productivity Boom: GDP index at ${newGDPIndex.toFixed(1)} — nearly ${(newGDPIndex - 100).toFixed(0)}% above baseline. ` +
+      `AI is delivering an extraordinary productivity dividend: fewer workers producing more output, ` +
+      `as automation handles the routine layer of almost every industry. ` +
+      `The critical question this number doesn't answer is who captures the gains — ` +
+      `if they flow primarily to capital owners and high-skill labor, GDP growth and human welfare diverge sharply.`
+    )
+  } else if (newGDPIndex > 115) {
+    events.push(
+      `${yr} — Strong GDP Growth: Output is ${(newGDPIndex - 100).toFixed(0)}% above baseline, driven by AI productivity gains. ` +
+      `Wage growth for high-complementarity roles is pushing up the aggregate wage bill even as employment falls. ` +
+      `On paper, the economy is doing well. But median household income and GDP are increasingly decoupled — ` +
+      `a rising tide that isn't lifting all boats.`
+    )
   } else if (newGDPIndex < 80) {
-    events.push(`${yr}: GDP index falling to ${newGDPIndex.toFixed(1)} — output contracting as jobs disappear.`)
+    events.push(
+      `${yr} — GDP Contracting: Output index has fallen to ${newGDPIndex.toFixed(1)} — ${(100 - newGDPIndex).toFixed(0)}% below baseline. ` +
+      `Mass displacement is destroying consumer spending power faster than AI productivity can compensate. ` +
+      `This is the scenario economists most feared: automation without sufficient redistribution creates a demand collapse, ` +
+      `as the workers who lost their jobs were precisely the ones whose spending kept local economies running.`
+    )
+  } else if (newGDPIndex < 92) {
+    events.push(
+      `${yr} — GDP Softening: Output is tracking ${(100 - newGDPIndex).toFixed(0)}% below baseline. ` +
+      `Displacement is outpacing productivity gains in some sectors — a sign that the transition costs are real and front-loaded. ` +
+      `Whether this recovers depends on whether displaced workers find new roles quickly enough to sustain consumption.`
+    )
   }
 
-  // Fallback: stable year
+  // ── Stable year fallback (only fires if nothing else triggered) ───────────
   if (events.length === 0) {
-    const stableMessages = [
-      `${yr}: Economy holding steady. Conditions stable across all indicators.`,
-      `${yr}: No major disruptions this year. Gradual AI integration continuing.`,
-      `${yr}: Moderate conditions. Employment and prices within normal range.`,
+    const offset = (nextYear - 2026) % 3
+    const stableNarratives = [
+      `${yr} — Gradual Transition: No major shocks this year. AI integration is proceeding at a measured pace — ` +
+      `businesses are deploying automation incrementally rather than all at once, and workforce transitions are happening through attrition rather than mass layoffs. ` +
+      `Stability holds at ${newStabilityIndex.toFixed(0)}/100. The foundation is fragile: ` +
+      `current conditions reflect a careful balance between capability, regulation, and labor protection that can shift quickly if any slider moves far in either direction.`,
+
+      `${yr} — Holding Pattern: The economy is absorbing AI disruption without acute distress. ` +
+      `Unemployment at ${(newUnemploymentRate * 100).toFixed(1)}% remains elevated above structural norms but isn't accelerating. ` +
+      `Wage gains for skilled workers are real but modest. Food prices are stable. ` +
+      `This is what a managed transition looks like — not painless, but orderly. ` +
+      `Whether it continues depends on maintaining the policy mix that's producing it.`,
+
+      `${yr} — Stable but Unequal: Aggregate indicators are holding — GDP near baseline, stability at ${newStabilityIndex.toFixed(0)}/100. ` +
+      `But the aggregate masks divergence: high-skill workers in tech and healthcare are doing well; ` +
+      `routine service workers are treading water or falling behind. ` +
+      `The story of this year is less about what happened and more about what didn't: ` +
+      `no major crisis, but no resolution of the underlying tension between AI's productivity gains and its distributional consequences.`,
     ]
-    events.push(stableMessages[(nextYear - 2026) % stableMessages.length])
+    events.push(stableNarratives[offset])
   }
 
   return {
