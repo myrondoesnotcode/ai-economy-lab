@@ -41,7 +41,7 @@ export function Charts({ history }: Props) {
       {/* Employment bar chart */}
       <div className="chart-card">
         <h3 className="chart-title">Employment by Occupation (millions)</h3>
-        <ResponsiveContainer width="100%" height={280}>
+        <ResponsiveContainer width="100%" height={Math.max(400, employmentData.length * 22)}>
           <BarChart data={employmentData} layout="vertical" margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
             <XAxis type="number" tick={{ fontSize: 11, fill: "#9ca3af" }} />
             <YAxis
@@ -54,7 +54,7 @@ export function Charts({ history }: Props) {
               contentStyle={{ background: "#1f2937", border: "1px solid #374151", borderRadius: 6 }}
               labelStyle={{ color: "#f9fafb" }}
               itemStyle={{ color: "#d1d5db" }}
-              formatter={(v) => [`${v ?? 0}M`, ""]}
+              formatter={(v, name) => [`${v ?? 0}M`, name]}
             />
             <Bar dataKey="baseline" fill="#374151" name="Baseline" radius={[0, 2, 2, 0]} />
             <Bar dataKey="employment" fill="#6366f1" name="Current" radius={[0, 2, 2, 0]} />
