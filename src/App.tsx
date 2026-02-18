@@ -3,6 +3,7 @@ import type { SliderInputs } from "./engine/types"
 import { runSimulation } from "./engine/simulate"
 import { ControlPanel } from "./components/ControlPanel"
 import { Dashboard } from "./components/Dashboard"
+import { Chatbot } from "./components/Chatbot"
 import rawParams from "./data/modelParams.json"
 import "./App.css"
 
@@ -91,6 +92,12 @@ export default function App() {
         <div className="bottom-actions">
           <button className="reset-btn" onClick={handleReset}>↺ Reset to Defaults</button>
         </div>
+        <Chatbot
+          history={history}
+          sliders={sliders}
+          onSliderChange={handleSliderChange}
+          params={params}
+        />
         <AboutSection />
       </div>
     </div>
