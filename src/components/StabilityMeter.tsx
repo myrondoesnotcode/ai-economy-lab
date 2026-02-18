@@ -1,5 +1,6 @@
 interface Props {
   value: number
+  tooltip?: string
 }
 
 function getColor(value: number): string {
@@ -16,15 +17,18 @@ function getLabel(value: number): string {
   return "Critical"
 }
 
-export function StabilityMeter({ value }: Props) {
+export function StabilityMeter({ value, tooltip }: Props) {
   const color = getColor(value)
   const label = getLabel(value)
   const pct = Math.max(0, Math.min(100, value))
 
   return (
-    <div className="stability-meter">
+    <div className="stability-meter" title={tooltip}>
       <div className="stability-header">
-        <span className="stability-title">Stability Index</span>
+        <span className="stability-title">
+          Stability Index
+          <span className="stability-info-hint">ⓘ</span>
+        </span>
         <span className="stability-badge" style={{ background: color }}>
           {label}
         </span>

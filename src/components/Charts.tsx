@@ -18,11 +18,12 @@ const COLORS = {
 export function Charts({ history }: Props) {
   const latest = history[history.length - 1]
 
-  // Employment bar chart data
+  // Employment bar chart data — keep full name for tooltip, truncated for axis
   const employmentData = latest.occupations.map(o => {
     const base = baseOccupations.find(b => b.id === o.id)!
     return {
-      name: base.name.length > 22 ? base.name.slice(0, 22) + "…" : base.name,
+      name: base.name.length > 26 ? base.name.slice(0, 26) + "…" : base.name,
+      fullName: base.name,
       employment: Math.round(o.employment / 1_000_000 * 10) / 10,
       baseline: Math.round(base.employment / 1_000_000 * 10) / 10,
     }
@@ -36,6 +37,34 @@ export function Charts({ history }: Props) {
     stability: Math.round(s.stabilityIndex * 10) / 10,
   }))
 
+  // Custom tooltip for bar chart — shows full occupation name
+  const BarTooltip = ({ active, payload, label }: {
+    active?: boolean
+    payload?: { name: string; value: number; fill: string }[]
+    label?: string
+  }) => {
+    if (!active || !payload?.length) return null
+    // Find the full name from our data
+    const entry = employmentData.find(d => d.name === label)
+    const displayName = entry?.fullName ?? label ?? ""
+    return (
+      <div style={{
+        background: "#1f2937",
+        border: "1px solid #374151",
+        borderRadius: 6,
+        padding: "8px 12px",
+        fontSize: 12,
+      }}>
+        <p style={{ color: "#f9fafb", marginBottom: 6, fontWeight: 600 }}>{displayName}</p>
+        {payload.map(p => (
+          <p key={p.name} style={{ color: "#d1d5db", margin: "2px 0" }}>
+            {p.name}: <span style={{ color: p.fill, fontWeight: 600 }}>{p.value ?? 0}M</span>
+          </p>
+        ))}
+      </div>
+    )
+  }
+
   return (
     <div className="charts">
       {/* Employment bar chart */}
@@ -47,15 +76,10 @@ export function Charts({ history }: Props) {
             <YAxis
               type="category"
               dataKey="name"
-              width={165}
+              width={190}
               tick={{ fontSize: 10, fill: "#d1d5db" }}
             />
-            <Tooltip
-              contentStyle={{ background: "#1f2937", border: "1px solid #374151", borderRadius: 6 }}
-              labelStyle={{ color: "#f9fafb" }}
-              itemStyle={{ color: "#d1d5db" }}
-              formatter={(v, name) => [`${v ?? 0}M`, name]}
-            />
+            <Tooltip content={<BarTooltip />} />
             <Bar dataKey="baseline" fill="#374151" name="Baseline" radius={[0, 2, 2, 0]} />
             <Bar dataKey="employment" fill="#6366f1" name="Current" radius={[0, 2, 2, 0]} />
             <Legend wrapperStyle={{ fontSize: 11, color: "#9ca3af" }} />

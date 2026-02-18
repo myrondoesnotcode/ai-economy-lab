@@ -6,6 +6,10 @@ interface Props {
   onChange: (key: keyof SliderInputs, value: number) => void
 }
 
+// Sliders that previously did nothing — now wired in simulate.ts
+// Keep this set empty (all sliders are now active), but the list is here for reference
+const PLACEHOLDER_KEYS = new Set<string>([])
+
 export function ControlPanel({ sliders, params, onChange }: Props) {
   const sliderKeys = Object.keys(params.sliders) as (keyof SliderInputs)[]
 
@@ -17,10 +21,14 @@ export function ControlPanel({ sliders, params, onChange }: Props) {
         {sliderKeys.map(key => {
           const cfg = params.sliders[key]
           const value = sliders[key]
+          const isPlaceholder = PLACEHOLDER_KEYS.has(key)
           return (
-            <div key={key} className="slider-item">
+            <div key={key} className={`slider-item${isPlaceholder ? " slider-placeholder" : ""}`}>
               <div className="slider-header">
-                <label className="slider-label">{cfg.label}</label>
+                <label className="slider-label">
+                  {cfg.label}
+                  {isPlaceholder && <span className="slider-placeholder-tag">soon</span>}
+                </label>
                 <span className="slider-value">{value.toFixed(2)}</span>
               </div>
               <input
@@ -31,6 +39,7 @@ export function ControlPanel({ sliders, params, onChange }: Props) {
                 value={value}
                 onChange={e => onChange(key, parseFloat(e.target.value))}
                 className="slider-input"
+                disabled={isPlaceholder}
               />
               <div className="slider-bounds">
                 <span>{cfg.min}</span>

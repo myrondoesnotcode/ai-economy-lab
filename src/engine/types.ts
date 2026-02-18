@@ -26,6 +26,7 @@ export type SimulationState = {
   inequalityIndex: number
   stabilityIndex: number
   eventLog: string[]
+  _baseGDP?: number
 }
 
 export type SliderInputs = {

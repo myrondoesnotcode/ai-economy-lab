@@ -25,6 +25,32 @@ body {
 .app-layout {
   display: flex;
   min-height: 100vh;
+  position: relative;
+}
+
+/* Mobile toggle button — hidden on desktop */
+.mobile-panel-toggle {
+  display: none;
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 200;
+  padding: 10px 18px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.5);
+  transition: background 0.15s, transform 0.15s;
+}
+.mobile-panel-toggle:hover { background: var(--accent2); transform: scale(1.04); }
+
+/* Control panel wrapper (desktop: just a pass-through) */
+.control-panel-wrapper {
+  display: contents;
 }
 
 /* Control panel */
@@ -66,6 +92,24 @@ body {
   gap: 4px;
 }
 
+/* Placeholder sliders (greyed out, for sliders not yet wired) */
+.slider-placeholder {
+  opacity: 0.45;
+}
+
+.slider-placeholder-tag {
+  font-size: 0.62rem;
+  font-weight: 700;
+  background: var(--border);
+  color: var(--muted);
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .slider-header {
   display: flex;
   justify-content: space-between;
@@ -94,6 +138,10 @@ body {
   background: var(--border);
   outline: none;
   cursor: pointer;
+}
+
+.slider-input:disabled {
+  cursor: not-allowed;
 }
 
 .slider-input::-webkit-slider-thumb {
@@ -173,6 +221,12 @@ body {
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 14px 16px;
+  cursor: help;
+  transition: border-color 0.15s;
+}
+
+.metric-card:hover {
+  border-color: var(--accent);
 }
 
 .metric-label {
@@ -202,6 +256,12 @@ body {
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 14px 16px;
+  cursor: help;
+  transition: border-color 0.15s;
+}
+
+.stability-meter:hover {
+  border-color: var(--accent);
 }
 
 .stability-header {
@@ -215,6 +275,15 @@ body {
   font-size: 0.82rem;
   font-weight: 600;
   color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stability-info-hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+  cursor: help;
 }
 
 .stability-badge {
@@ -289,7 +358,7 @@ body {
 }
 
 .event-log-body {
-  max-height: 220px;
+  max-height: 260px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -318,9 +387,15 @@ body {
   color: #ef4444;
 }
 
+/* Bottom actions row */
+.bottom-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
 /* Reset button */
 .reset-btn {
-  align-self: flex-start;
   padding: 8px 18px;
   background: transparent;
   border: 1px solid var(--border);
@@ -336,8 +411,158 @@ body {
   color: var(--accent2);
 }
 
+/* About section */
+.about-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.about-toggle {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  letter-spacing: 0.03em;
+}
+
+.about-toggle:hover {
+  color: var(--accent2);
+  background: var(--surface2);
+}
+
+.about-body {
+  padding: 0 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.about-body p { margin-top: 12px; }
+.about-body h4 {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 4px;
+}
+
+.about-body ul {
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.about-body strong {
+  color: var(--text);
+}
+
+.about-disclaimer {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-style: italic;
+  margin-top: 4px;
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+
+/* ═══════════════════════════════════════════
+   MOBILE RESPONSIVE (≤ 768px)
+═══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Show the floating controls button */
+  .mobile-panel-toggle {
+    display: block;
+  }
+
+  .app-layout {
+    flex-direction: column;
+  }
+
+  /* Panel wrapper becomes a slide-in overlay */
+  .control-panel-wrapper {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 150;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateX(-100%);
+    transition: opacity 0.25s, transform 0.25s;
+  }
+
+  .control-panel-wrapper.panel-open {
+    pointer-events: all;
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .control-panel {
+    width: 300px;
+    max-width: 90vw;
+    height: 100vh;
+    overflow-y: auto;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.6);
+  }
+
+  .dashboard-wrapper {
+    width: 100%;
+    padding: 16px;
+    gap: 14px;
+    /* Space at bottom for floating button */
+    padding-bottom: 72px;
+  }
+
+  .dashboard-title {
+    font-size: 1.2rem;
+  }
+
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .metric-value {
+    font-size: 1.3rem;
+  }
+
+  .chart-card {
+    padding: 12px;
+    overflow-x: auto;
+  }
+
+  .event-log-body {
+    max-height: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dashboard-wrapper {
+    padding: 12px;
+    padding-bottom: 72px;
+  }
+}
