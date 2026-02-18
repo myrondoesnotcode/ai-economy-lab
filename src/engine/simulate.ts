@@ -95,9 +95,7 @@ export function step(
     const base = baseOccupations.find(o => o.id === occState.id)!
 
     // 7.2 Job loss rate
-    // Retraining reduces displacement rate AND raises the effective employment floor
-    // (retrained workers find adjacent roles instead of staying unemployed)
-    const retrainingDamp = retraining * 0.55  // up to 55% reduction in job loss rate at max retraining
+    const retrainingDamp = retraining * 0.55
     const jobLossRate = clamp(
       aiCapability * effectiveAdoption * base.routineScore * (1 - base.socialScore) *
         kSubstitution * (1 - laborProtection * laborProtectionLayoffDamp) * (1 - retrainingDamp),
@@ -105,19 +103,21 @@ export function step(
       0.5
     )
 
-    // Retraining also lifts the employment floor: workers transition into new roles
-    // rather than hitting the hard floor of permanent unemployment
     const effectiveFloor = employmentFloorRatio + retraining * (0.5 - employmentFloorRatio)
     const newEmployment = Math.max(
       base.employment * effectiveFloor,
       occState.employment * (1 - jobLossRate)
     )
 
-    // 7.3 Wage growth
+    // FIX #4 — Wages: complementary roles rise, but displaced-sector wages fall
+    // from labor oversupply. Workers competing for fewer jobs push wages down.
+    const displacementRatio = newEmployment / base.employment  // 1.0 = no displacement, 0.0 = fully displaced
     const wageGrowth = aiCapability * base.complementarityScore * kComplementarityWage *
       (1 - corporateConcentration * 0.2)
-
-    const newWage = occState.wage * (1 + wageGrowth)
+    // Wage suppression: when employment falls, excess labor supply pulls wages down
+    const wageSuppression = base.routineScore * (1 - displacementRatio) * 0.04
+    const netWageChange = wageGrowth - wageSuppression
+    const newWage = Math.max(occState.wage * (1 + netWageChange), base.meanWage * 0.5) // floor at 50% of baseline
 
     return {
       id: occState.id,
@@ -126,18 +126,34 @@ export function step(
     }
   })
 
-  // 7.4 GDP proxy
-  const newGDPRaw = newOccupations.reduce((sum, o) => sum + o.employment * o.wage, 0)
-  const baseGDP = state._baseGDP ?? newGDPRaw
+  // 7.4 GDP proxy — FIX #2: Include capital/profit side of automation
+  // When AI automates work, productivity gains flow partly to firms (capital),
+  // not just to remaining workers' wages. GDP captures both.
+  const newWageBill = newOccupations.reduce((sum, o) => sum + o.employment * o.wage, 0)
+  const totalDisplacedWorkers = newOccupations.reduce((sum, o) => {
+    const base = baseOccupations.find(b => b.id === o.id)!
+    return sum + Math.max(0, base.employment - o.employment)
+  }, 0)
+  const avgBaseWage = baseOccupations.reduce((sum, o) => sum + o.meanWage, 0) / baseOccupations.length
+  // Displaced work is now done by AI; productivity surplus accrues to firms (~60% efficiency capture)
+  const aiCapitalGains = totalDisplacedWorkers * avgBaseWage * aiCapability * 0.6
+
+  const newGDPRaw = newWageBill + aiCapitalGains
+  const baseGDP = state._baseGDP ?? newOccupations.reduce((sum, o) => sum + o.employment * o.wage, 0)
   const newGDPIndex = clamp((newGDPRaw / baseGDP) * 100, gdpIndexMin, gdpIndexMax)
 
   // 7.5 Unemployment
   const newTotalEmployment = newOccupations.reduce((sum, o) => sum + o.employment, 0)
   const newUnemploymentRate = clamp((laborForce - newTotalEmployment) / laborForce, 0, 1)
 
-  // 7.6 Food price
-  // Social transfers (UBI-style) dampen food price pressure by boosting demand resilience
-  const transfersFoodDamp = transfers * 0.25
+  // FIX #5 — Demand feedback loop
+  // Unemployment destroys consumer spending → businesses lose revenue → more layoffs.
+  // Modeled as an amplifier on the stability penalty for unemployment, not directly on jobs
+  // (to avoid compounding instability that's hard to tune).
+  const demandFeedback = Math.max(0, newUnemploymentRate - 0.08) * 0.3
+  const adjustedUnemploymentForStability = newUnemploymentRate + demandFeedback
+
+  // 7.6 Food price — FIX #1: Logistics automation has two opposing effects
   const currentLogistics = newOccupations
     .filter(o => {
       const base = baseOccupations.find(b => b.id === o.id)!
@@ -146,33 +162,68 @@ export function step(
     .reduce((sum, o) => sum + o.employment, 0)
 
   const logisticsShortfall = (baseLogistics - currentLogistics) / baseLogistics
+
+  // Mid-transition chaos: workers displaced before AI logistics is reliable = supply disruption
+  // At high AI capability, AI logistics works well and this effect fades
+  const logisticsTransitionChaos = logisticsShortfall * (1 - aiCapability * 0.7)
+  // Long-term AI efficiency gain: capable + adopted AI logistics drives costs down
+  const logisticsAIEfficiency = aiCapability * effectiveAdoption * 0.04
+
+  const foodLogisticsEffect = logisticsTransitionChaos * kFoodFromLogistics * (1 - supplyChainResilience)
+    - logisticsAIEfficiency * (1 - supplyChainResilience * 0.5)
+
+  // FIX #6: Social transfers don't lower food prices — they help people afford food.
+  // Transfers are modeled as a stability buffer, not a supply-side price reducer.
   const newFoodPriceIndex = clamp(
     state.foodPriceIndex *
-      (1 + logisticsShortfall * kFoodFromLogistics * (1 - supplyChainResilience) * (1 - transfersFoodDamp)) *
-      (1 + energyCost * kEnergyPassThrough * (1 - transfersFoodDamp)),
+      (1 + foodLogisticsEffect) *
+      (1 + energyCost * kEnergyPassThrough),
     foodPriceIndexMin,
     foodPriceIndexMax
   )
 
-  // 7.7 Inequality index
-  // Social transfers directly compress inequality by redistributing income
-  const transfersIneqDamp = transfers * 0.4
-  const avgComplementarity =
-    baseOccupations.reduce((sum, o) => sum + o.complementarityScore, 0) / baseOccupations.length
-  const avgRoutine =
-    baseOccupations.reduce((sum, o) => sum + o.routineScore, 0) / baseOccupations.length
+  // Transfers improve food affordability for displaced workers, reducing the
+  // stability penalty from food prices (not the price itself).
+  const foodAffordabilityBuffer = transfers * 0.35 * Math.max(0, newFoodPriceIndex - 1)
 
-  let newInequalityIndex = state.inequalityIndex +
-    aiCapability * (avgRoutine - avgComplementarity) * kIneqFromAI * (1 - transfersIneqDamp) +  // sign flipped: AI widens inequality
-    corporateConcentration * kConcentrationLaborShare * (1 - transfersIneqDamp)                  // additive, not multiplicative
+  // 7.7 Inequality index — FIX #3: Scale with actual wage divergence, not fixed increment
+  // Measures the real gap: high-complementarity wages rising vs high-routine wages falling
+  const transfersIneqDamp = transfers * 0.4
+
+  const highCompOccupations = newOccupations.filter(o => {
+    const base = baseOccupations.find(b => b.id === o.id)!
+    return base.complementarityScore > 0.7
+  })
+  const highRoutineOccupations = newOccupations.filter(o => {
+    const base = baseOccupations.find(b => b.id === o.id)!
+    return base.routineScore > 0.7
+  })
+
+  const highEndWageGain = highCompOccupations.reduce((sum, o) => {
+    const base = baseOccupations.find(b => b.id === o.id)!
+    return sum + Math.max(0, o.wage - base.meanWage)
+  }, 0) / Math.max(1, highCompOccupations.length)
+
+  const lowEndWageLoss = highRoutineOccupations.reduce((sum, o) => {
+    const base = baseOccupations.find(b => b.id === o.id)!
+    return sum + Math.max(0, base.meanWage - o.wage)
+  }, 0) / Math.max(1, highRoutineOccupations.length)
+
+  const wageDivergence = (highEndWageGain + lowEndWageLoss) / avgBaseWage
+  const inequalityIncrease = wageDivergence * kIneqFromAI * (1 - transfersIneqDamp)
+    + corporateConcentration * kConcentrationLaborShare * (1 - transfersIneqDamp)
+
+  let newInequalityIndex = state.inequalityIndex + inequalityIncrease
   newInequalityIndex = clamp(newInequalityIndex, inequalityIndexMin, inequalityIndexMax)
 
   // 7.8 Stability index
+  // Uses demand-adjusted unemployment (FIX #5) and food affordability buffer (FIX #6)
+  const effectiveFoodPenalty = Math.max(0, (newFoodPriceIndex - 1) * 100 - foodAffordabilityBuffer * 100)
   const newStabilityIndex = clamp(
     100 -
-      newUnemploymentRate * 100 * stabilityWeightUnemployment -
-      (newFoodPriceIndex - 1) * 100 * stabilityWeightFoodInflation -
-      (newInequalityIndex - 1.0) * stabilityWeightInequality,  // penalize deviation from baseline, not absolute
+      adjustedUnemploymentForStability * 100 * stabilityWeightUnemployment -
+      effectiveFoodPenalty * stabilityWeightFoodInflation -
+      (newInequalityIndex - 1.0) * stabilityWeightInequality,
     stabilityMin,
     stabilityMax
   )
@@ -203,10 +254,7 @@ export function step(
   const biggestWinnerWageGain = Math.round(biggestWinner.wage - biggestWinnerBase.meanWage)
   const biggestWinnerWagePct = ((biggestWinner.wage / biggestWinnerBase.meanWage - 1) * 100).toFixed(1)
 
-  const totalDisplaced = Math.round((newOccupations.reduce((s, o) => {
-    const base = baseOccupations.find(b => b.id === o.id)!
-    return s + Math.max(0, base.employment - o.employment)
-  }, 0)) / 1000)
+  const totalDisplacedK = Math.round(totalDisplacedWorkers / 1000)
 
   // ── AI substitution narrative ─────────────────────────────────────────────
   if (aiCapability > 0.3 && effectiveAdoption > 0.2) {
@@ -215,7 +263,7 @@ export function step(
       events.push(
         `${yr} — Automation Surge: AI systems operating at ${(aiCapability * 100).toFixed(0)}% capability are tearing through routine work. ` +
         `${biggestLoserBase.name} has shed ~${biggestLoserLost.toLocaleString()}k positions this year alone (${biggestLoserPct}% below its pre-AI baseline), ` +
-        `and across all tracked occupations roughly ${totalDisplaced.toLocaleString()}k jobs have been eliminated from baseline levels. ` +
+        `and across all tracked occupations roughly ${totalDisplacedK.toLocaleString()}k jobs have been eliminated from baseline levels. ` +
         `The speed of displacement is outpacing most workers' ability to retrain — expect unemployment pressure to intensify.`
       )
     } else if (aiCapability > 0.5) {
@@ -243,36 +291,53 @@ export function step(
         `${yr} — The AI Premium: A sharp divide is forming between those who wield AI and those displaced by it. ` +
         `${biggestWinnerBase.name} are commanding $${wageGainK}k more per year than their pre-AI baseline (+${biggestWinnerWagePct}%), ` +
         `as each worker now handles tasks that previously required teams. ` +
-        `Firms are competing fiercely for talent that can direct and validate AI output — but this productivity windfall is not being shared broadly.`
+        `Meanwhile, wages in displaced occupations are being suppressed by labor oversupply — too many workers chasing too few positions. ` +
+        `Firms are competing fiercely for AI talent, but this productivity windfall is not being shared broadly.`
       )
     } else {
       events.push(
         `${yr} — Productivity Dividend (Uneven): AI tools are making skilled workers measurably more productive. ` +
         `${biggestWinnerBase.name} wages are up $${wageGainK}k from baseline (+${biggestWinnerWagePct}%), ` +
         `reflecting genuine output gains as AI handles the analytical grunt work. ` +
-        `The catch: these gains are concentrated among workers with the skills to leverage the tools — ` +
-        `lower-wage workers in routine roles see none of this upside.`
+        `The catch: these gains are concentrated among workers with the skills to leverage the tools. ` +
+        `In displaced occupations, an oversupply of workers is already pulling wages down before outright job losses register.`
       )
     }
   }
 
-  // ── Logistics / food price narratives ─────────────────────────────────────
-  if (logisticsShortfall > 0.15) {
-    const shortPct = (logisticsShortfall * 100).toFixed(0)
-    const foodImpact = (logisticsShortfall * kFoodFromLogistics * (1 - supplyChainResilience) * 100).toFixed(1)
+  // ── Demand feedback narrative ─────────────────────────────────────────────
+  if (demandFeedback > 0.03) {
+    const feedbackPct = (demandFeedback * 100).toFixed(1)
     events.push(
-      `${yr} — Supply Chain Strain: The logistics workforce is ${shortPct}% below its pre-automation baseline — ` +
-      `warehouses and freight networks are struggling to find workers willing to compete with low-wage automated alternatives. ` +
-      `Fewer hands moving goods means longer delivery windows and spoilage risk, pushing food prices up an estimated +${foodImpact}% this year alone. ` +
-      `Grocery bills are rising fastest in lower-income households, which spend the highest share of income on food.`
+      `${yr} — Demand Spiral Risk: Unemployment above structural norms is triggering a secondary effect. ` +
+      `Displaced workers spend less — particularly on local services, restaurants, and retail — which reduces revenue for businesses that aren't yet automated. ` +
+      `This demand contraction adds an estimated +${feedbackPct}% to effective unemployment pressure beyond the direct automation effect. ` +
+      `This self-reinforcing dynamic is what turns manageable displacement into a prolonged recession.`
     )
-  } else if (logisticsShortfall > 0.05) {
+  }
+
+  // ── Logistics / food price narratives ─────────────────────────────────────
+  if (logisticsShortfall > 0.15 && aiCapability < 0.6) {
     const shortPct = (logisticsShortfall * 100).toFixed(0)
     events.push(
-      `${yr} — Logistics Workforce Thinning: Automation is quietly hollowing out freight and warehousing roles — ` +
-      `currently ${shortPct}% below baseline — and the effects are trickling into food prices. ` +
-      `Most consumers haven't noticed yet, but the margin between stable supply chains and disruption is narrowing. ` +
-      `Higher supply chain resilience investment could absorb this; without it, further job losses here compound directly into grocery costs.`
+      `${yr} — Supply Chain Disruption: The logistics workforce is ${shortPct}% below its pre-automation baseline, ` +
+      `but AI-powered logistics isn't yet capable enough to reliably replace it. ` +
+      `This mid-transition gap — workers displaced before automation is ready — is causing longer delivery times, spoilage, and rising food costs. ` +
+      `Grocery bills are rising fastest in lower-income households. This is temporary: once AI logistics matures, costs should fall.`
+    )
+  } else if (logisticsShortfall > 0.15 && aiCapability >= 0.6) {
+    events.push(
+      `${yr} — Logistics Automation Maturing: AI-powered freight and warehouse systems are replacing the displaced workforce effectively. ` +
+      `The supply chain disruption from the early transition is easing — automated routing and robotic warehousing are driving delivery costs down. ` +
+      `For food prices, this is a stabilizing and potentially deflationary force: logistics efficiency gains are offsetting earlier inflation.`
+    )
+  } else if (logisticsShortfall > 0.05 && aiCapability < 0.5) {
+    const shortPct = (logisticsShortfall * 100).toFixed(0)
+    events.push(
+      `${yr} — Logistics Transition Underway: Automation is hollowing out freight and warehousing roles — ` +
+      `currently ${shortPct}% below baseline — faster than AI logistics can reliably fill the gap. ` +
+      `The effects are trickling into food prices as supply chains become less redundant. ` +
+      `This is a temporary disruption cost of the transition, not a permanent structural change.`
     )
   }
 
@@ -280,22 +345,22 @@ export function step(
     const foodEffect = (energyCost * kEnergyPassThrough * 100).toFixed(1)
     events.push(
       `${yr} — Energy Shock: Energy prices are ${(energyCost * 100).toFixed(0)}% above baseline — ` +
-      `a significant external shock that passes through directly to transportation and food production costs (+${foodEffect}% on food this year). ` +
-      `This compounds any existing logistics workforce shortfall. ` +
-      `Households already squeezed by unemployment are now facing higher prices at the checkout line simultaneously.`
+      `a significant external shock passing through directly to transportation and food production costs (+${foodEffect}% on food this year). ` +
+      `This compounds any existing logistics disruption. ` +
+      `Households squeezed by unemployment face higher prices at the checkout simultaneously.`
     )
   } else if (energyCost > 0.1) {
     const foodEffect = (energyCost * kEnergyPassThrough * 100).toFixed(1)
     events.push(
       `${yr} — Energy Headwinds: Moderately elevated energy costs (+${(energyCost * 100).toFixed(0)}% above baseline) ` +
       `are adding +${foodEffect}% to food prices via transport and refrigeration cost pass-through. ` +
-      `Not yet a crisis, but it erodes the purchasing power of workers already facing stagnant wages or unemployment.`
+      `Not yet a crisis, but it erodes the purchasing power of workers already facing suppressed wages or displacement.`
     )
   } else if (energyCost < -0.1) {
     events.push(
       `${yr} — Energy Tailwind: Falling energy costs (${(energyCost * 100).toFixed(0)}% below baseline) are providing unexpected relief. ` +
-      `Cheaper transport and refrigeration are dampening food price inflation, giving households a small but real buffer. ` +
-      `This partially offsets wage stagnation and helps stabilize purchasing power at the lower end of the income distribution.`
+      `Cheaper transport and refrigeration are dampening food price pressure, giving households a small but real buffer. ` +
+      `This partially offsets wage suppression in displaced occupations and helps stabilize purchasing power.`
     )
   }
 
@@ -322,7 +387,7 @@ export function step(
       `${yr} — Unemployment Elevated: The rate has climbed to ${unemPct}%, roughly ${displaceAboveStructural.toLocaleString()}k workers above structural norms. ` +
       `This is the early visible signal of AI displacement — the headline number understates the problem, ` +
       `as many displaced workers have moved to part-time or gig work that doesn't register in these figures. ` +
-      `Labor market slack at this level suppresses wage growth for everyone still employed.`
+      `Labor market slack at this level suppresses wage growth — and causes outright wage cuts — in affected occupations.`
     )
   }
 
@@ -331,22 +396,21 @@ export function step(
     events.push(
       `${yr} — ⚠ Severe Inequality: The inequality index has reached ${newInequalityIndex.toFixed(2)} — ` +
       `more than double the pre-AI baseline. AI productivity gains are being captured almost entirely at the top. ` +
-      `A software developer or ML engineer earns many multiples of what a displaced cashier or data entry worker earns on unemployment. ` +
-      `At this level, inequality itself becomes a drag on aggregate demand: the workers who lost their jobs had high marginal propensity to consume, ` +
-      `and concentrating income at the top reduces overall spending in the economy.`
+      `The wage gap between an ML engineer (salary surging) and a displaced data entry worker (wages fell before job vanished) is now extreme. ` +
+      `At this level, inequality becomes a drag on aggregate demand: concentrated income at the top is spent less efficiently than distributed income would be.`
     )
   } else if (newInequalityIndex > 1.6) {
     events.push(
       `${yr} — Inequality Widening Sharply: Wage dispersion has reached ${newInequalityIndex.toFixed(2)}x baseline. ` +
-      `The gap between AI-complementary workers (whose wages are rising) and AI-displaced workers (facing unemployment or wage cuts) is becoming structural. ` +
+      `The gap between AI-complementary workers (rising wages) and AI-displaced workers (falling wages, then unemployment) is becoming structural. ` +
       `High corporate concentration amplifies this: firms with market power pocket the AI productivity gains rather than passing them to workers or consumers. ` +
       `Without redistribution, this gap tends to widen further each year.`
     )
   } else if (newInequalityIndex > 1.4) {
     events.push(
       `${yr} — Growing Divide: The inequality index is at ${newInequalityIndex.toFixed(2)}, up from the 1.0 baseline. ` +
-      `Two distinct labor markets are emerging: high-skill workers whose productivity — and compensation — is amplified by AI, ` +
-      `and routine workers facing stagnation or displacement. ` +
+      `Two distinct labor markets are emerging: high-skill workers whose productivity and compensation are amplified by AI, ` +
+      `and routine workers facing wage suppression or outright displacement. ` +
       `The divergence is still correctable with targeted policy, but it compounds if left unaddressed.`
     )
   }
@@ -391,18 +455,18 @@ export function step(
   // ── Transfers narratives ──────────────────────────────────────────────────
   if (transfers > 0.6) {
     events.push(
-      `${yr} — Social Transfers Providing Cushion: Transfer payments at ${(transfers * 100).toFixed(0)}% of scale are meaningfully compressing inequality ` +
-      `and stabilizing household spending. Displaced workers are maintaining consumption above poverty levels, ` +
-      `which prevents the secondary demand collapse that amplifies recessions. ` +
-      `The fiscal cost is significant, and there is ongoing political debate about sustainability — ` +
-      `but the stability data shows the tradeoff is paying off for now.`
+      `${yr} — Social Transfers Cushioning Displacement: Transfer payments at ${(transfers * 100).toFixed(0)}% of scale are maintaining baseline consumption for displaced workers. ` +
+      `Transfers don't lower food prices — but they ensure displaced workers can still afford food even as prices rise. ` +
+      `This prevents the secondary demand collapse that amplifies recessions: ` +
+      `households stay solvent, local businesses keep customers, and inequality is partially compressed through redistribution. ` +
+      `The fiscal cost is significant, but the stability data shows the tradeoff is paying off.`
     )
   } else if (transfers > 0.3) {
     events.push(
       `${yr} — Modest Transfer Support: Social transfers are providing a partial floor for displaced workers ` +
       `but are not large enough to fully offset the income loss from automation. ` +
-      `Food insecurity and housing stress are rising in communities hit hardest by displacement, ` +
-      `even as aggregate indicators like GDP look stable — a reminder that averages can obscure severe local conditions.`
+      `Food insecurity is rising in communities hit hardest by displacement — even where headline food prices look modest, ` +
+      `families whose incomes have collapsed face real hardship. Transfers soften but don't solve this.`
     )
   }
 
@@ -426,7 +490,7 @@ export function step(
   } else if (newStabilityIndex < 65) {
     events.push(
       `${yr} — Stability Under Stress: At ${newStabilityIndex.toFixed(0)}/100, the economy is functioning but showing strain. ` +
-      `Visible signs: longer unemployment spells in former manufacturing and service hubs, stagnant median wages despite rising GDP, ` +
+      `Visible signs: longer unemployment spells in former manufacturing and service hubs, stagnant or falling median wages despite rising GDP, ` +
       `and growing geographic divergence between tech-hub prosperity and hollowed-out communities elsewhere. ` +
       `These are lagging indicators — the underlying pressures driving them are already baked in.`
     )
@@ -436,17 +500,16 @@ export function step(
   if (newGDPIndex > 140) {
     events.push(
       `${yr} — Productivity Boom: GDP index at ${newGDPIndex.toFixed(1)} — nearly ${(newGDPIndex - 100).toFixed(0)}% above baseline. ` +
-      `AI is delivering an extraordinary productivity dividend: fewer workers producing more output, ` +
-      `as automation handles the routine layer of almost every industry. ` +
-      `The critical question this number doesn't answer is who captures the gains — ` +
-      `if they flow primarily to capital owners and high-skill labor, GDP growth and human welfare diverge sharply.`
+      `AI is delivering an extraordinary productivity dividend: automated systems are producing output that would have required far more labor. ` +
+      `But a large share of this GDP gain is captured by firms as profit, not by workers. ` +
+      `If these gains flow primarily to capital owners and high-skill labor, GDP growth and human welfare diverge sharply.`
     )
   } else if (newGDPIndex > 115) {
     events.push(
       `${yr} — Strong GDP Growth: Output is ${(newGDPIndex - 100).toFixed(0)}% above baseline, driven by AI productivity gains. ` +
-      `Wage growth for high-complementarity roles is pushing up the aggregate wage bill even as employment falls. ` +
+      `Both wage growth for high-complementarity roles and capital gains from automation are contributing. ` +
       `On paper, the economy is doing well. But median household income and GDP are increasingly decoupled — ` +
-      `a rising tide that isn't lifting all boats.`
+      `a rising tide that isn't lifting all boats, particularly for workers whose wages are being suppressed by displacement.`
     )
   } else if (newGDPIndex < 80) {
     events.push(
@@ -474,13 +537,13 @@ export function step(
 
       `${yr} — Holding Pattern: The economy is absorbing AI disruption without acute distress. ` +
       `Unemployment at ${(newUnemploymentRate * 100).toFixed(1)}% remains elevated above structural norms but isn't accelerating. ` +
-      `Wage gains for skilled workers are real but modest. Food prices are stable. ` +
+      `Wage gains for skilled workers are real but modest; wage suppression in routine roles is present but not yet severe. ` +
       `This is what a managed transition looks like — not painless, but orderly. ` +
       `Whether it continues depends on maintaining the policy mix that's producing it.`,
 
       `${yr} — Stable but Unequal: Aggregate indicators are holding — GDP near baseline, stability at ${newStabilityIndex.toFixed(0)}/100. ` +
       `But the aggregate masks divergence: high-skill workers in tech and healthcare are doing well; ` +
-      `routine service workers are treading water or falling behind. ` +
+      `routine service workers are treading water or falling behind — wages suppressed even before outright displacement. ` +
       `The story of this year is less about what happened and more about what didn't: ` +
       `no major crisis, but no resolution of the underlying tension between AI's productivity gains and its distributional consequences.`,
     ]

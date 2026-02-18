@@ -63,7 +63,7 @@
       "max": 1,
       "step": 0.01,
       "default": 0.2,
-      "tooltip": "Government transfer payments (UBI-style). Compresses inequality, dampens food price inflation, and stabilizes household spending."
+      "tooltip": "Government transfer payments (UBI-style). Compresses inequality, improves food affordability for displaced workers (reduces the stability hit from food prices, not the price itself), and stabilizes household spending."
     },
     "laborProtection": {
       "label": "Labor Protections",
