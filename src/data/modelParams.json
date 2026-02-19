@@ -14,7 +14,7 @@
   "kConcentrationLaborShare": 0.025,
   "gdpIndexMin": 50,
   "gdpIndexMax": 200,
-  "techLayoffIndexMin": 0.8,
+  "techLayoffIndexMin": 1.0,
   "techLayoffIndexMax": 3.0,
   "inequalityIndexMin": 0.5,
   "inequalityIndexMax": 3.0,

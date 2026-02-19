@@ -163,7 +163,7 @@ export function Charts({ history }: Props) {
           <LineChart data={timeData} margin={{ left: 0, right: 20, top: 5, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#9ca3af" }} />
-            <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} domain={[0.8, "auto"]} />
+            <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} domain={[1.0, "auto"]} />
             <Tooltip
               contentStyle={{ background: "#1f2937", border: "1px solid #374151", borderRadius: 6 }}
               labelStyle={{ color: "#f9fafb" }}

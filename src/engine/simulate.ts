@@ -168,8 +168,11 @@ export function step(
 
   // Mid-transition instability: displaced before AIOps is reliable
   const infraTransitionChaos = infrastructureShortfall * (1 - aiCapability * 0.7)
-  // Long-term AIOps efficiency: mature AI ops stabilizes and improves reliability
-  const infraAIEfficiency = aiCapability * effectiveAdoption * 0.04
+  // Long-term AIOps efficiency: only applies when infra has actually been displaced
+  // (no displacement = no efficiency dividend, index stays at 1.0 floor)
+  const infraAIEfficiency = infrastructureShortfall > 0
+    ? aiCapability * effectiveAdoption * 0.04 * infrastructureShortfall
+    : 0
 
   const techLayoffInfraEffect = infraTransitionChaos * kLayoffFromInfra * (1 - talentPipelineStrength)
     - infraAIEfficiency * (1 - talentPipelineStrength * 0.5)
