@@ -70,9 +70,9 @@ export function Charts({ history }: Props) {
       {/* Employment bar chart */}
       <div className="chart-card">
         <div className="chart-card-header">
-          <h3 className="chart-title">Employment by Occupation (millions)</h3>
+          <h3 className="chart-title">Employment by Occupation — 25 tracked roles (millions)</h3>
           <InfoPanel title="Employment by Occupation">
-            <p>This chart shows how many people are employed in each of the 25 tracked job categories, compared to the pre-AI baseline.</p>
+            <p>This chart shows the 25 occupations tracked by this simulation — together about <strong>45 million workers</strong>, selected to represent the jobs most exposed to AI disruption. The full US labor force is ~160 million; the remaining ~115 million are not modeled here.</p>
             <ul>
               <li><strong>Grey bars (Baseline)</strong> — how many workers were in each job before AI disruption. This is fixed and doesn't change.</li>
               <li><strong>Purple bars (Current)</strong> — how many workers are still employed in that job right now, after automation has had its effect.</li>

@@ -25,7 +25,7 @@ function AboutSection() {
           <p><strong>AI Economy Lab</strong> is a simplified macroeconomic sandbox that models how AI adoption affects employment, wages, food prices, and social stability over a 10-year horizon.</p>
           <h4>How it works</h4>
           <ul>
-            <li><strong>25 occupations</strong> are tracked, each scored on routine-ness, social complexity, analytical demand, and AI complementarity.</li>
+            <li><strong>25 occupations</strong> are tracked (~45M workers, selected to represent the jobs most exposed to AI disruption — out of ~160M total US workers), each scored on routine-ness, social complexity, analytical demand, and AI complementarity.</li>
             <li>Each year, jobs with high routine scores lose employment proportional to AI capability × adoption speed. Labor protections and retraining programs dampen this rate.</li>
             <li>High-complementarity roles (e.g. ML engineers, nurses) see wage growth as AI makes them more productive.</li>
             <li>Food prices rise when logistics jobs decline and energy costs increase; social transfers can dampen this.</li>
