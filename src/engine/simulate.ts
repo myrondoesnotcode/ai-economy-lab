@@ -146,16 +146,15 @@ export function step(
   const adjustedUnemploymentForStability = newUnemploymentRate + demandFeedback
 
   // ── Tech Layoff Index ─────────────────────────────────────────────────────
-  // Analogous to the food price index — measures structural disruption velocity
-  // in the tech labor market. Driven by infrastructure role displacement and
-  // open-source AI availability.
+  // Computed fresh each year as 1.0 + excess pressure (never multiplicatively
+  // compounded from prior state, so it cannot drift below 1.0).
   //
-  // Two opposing forces on infrastructure:
-  //   1. Mid-transition chaos: SRE/DevOps displaced before AIOps is reliable
-  //   2. Long-term AIOps efficiency: mature AI ops drives reliability up, costs down
+  // Pressure sources:
+  //   1. Infra shortfall chaos: SREs/DevOps displaced before AIOps is reliable
+  //      → partially offset once AI capability is high enough to run AIOps
+  //   2. Open source access: lower cost barrier = more mid-tier role displacement
   //
-  // Open source access (positive = more open) accelerates displacement pressure
-  // because lower barriers mean more roles can be automated more cheaply.
+  // Talent pipeline strength dampens both the chaos and the net effect.
 
   const currentInfrastructure = newOccupations
     .filter(o => {
@@ -166,24 +165,24 @@ export function step(
 
   const infrastructureShortfall = (baseInfrastructure - currentInfrastructure) / baseInfrastructure
 
-  // Mid-transition instability: displaced before AIOps is reliable
-  const infraTransitionChaos = infrastructureShortfall * (1 - aiCapability * 0.7)
-  // Long-term AIOps efficiency: only applies when infra has actually been displaced
-  // (no displacement = no efficiency dividend, index stays at 1.0 floor)
-  const infraAIEfficiency = infrastructureShortfall > 0
-    ? aiCapability * effectiveAdoption * 0.04 * infrastructureShortfall
+  // Mid-transition chaos: grows with shortfall, shrinks as AI capability matures
+  const infraTransitionChaos = infrastructureShortfall * Math.max(0, 1 - aiCapability * 0.9)
+
+  // AIOps efficiency offset: only reduces chaos when both infra IS displaced AND AI is capable
+  const infraAIEfficiencyOffset = infrastructureShortfall > 0
+    ? aiCapability * effectiveAdoption * 0.3 * infrastructureShortfall
     : 0
 
-  const techLayoffInfraEffect = infraTransitionChaos * kLayoffFromInfra * (1 - talentPipelineStrength)
-    - infraAIEfficiency * (1 - talentPipelineStrength * 0.5)
+  // Net infra pressure — always >= 0 (AIOps can reduce chaos but not push below zero)
+  const netInfraPressure = Math.max(0, infraTransitionChaos - infraAIEfficiencyOffset)
+    * kLayoffFromInfra * (1 - talentPipelineStrength * 0.8)
 
-  // Open source access: positive = more open models = lower automation cost = more displacement
-  const openSourceEffect = openSourceAccess * kOpenSourcePassThrough
+  // Open source pressure: only additive when positive (negative = proprietary = no relief)
+  const openSourcePressure = Math.max(0, openSourceAccess) * kOpenSourcePassThrough
 
+  // Index = 1.0 baseline + excess pressure. Hard floor at 1.0.
   const newTechLayoffIndex = clamp(
-    state.techLayoffIndex *
-      (1 + techLayoffInfraEffect) *
-      (1 + openSourceEffect),
+    1.0 + netInfraPressure + openSourcePressure,
     techLayoffIndexMin,
     techLayoffIndexMax
   )
