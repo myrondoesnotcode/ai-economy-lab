@@ -9,7 +9,7 @@ export type Occupation = {
   manualScore: number
   complementarityScore: number
   sector: string
-  isLogistics: boolean
+  isInfrastructure: boolean
 }
 
 export type SimulationState = {
@@ -22,7 +22,7 @@ export type SimulationState = {
   totalEmployment: number
   unemploymentRate: number
   gdpIndex: number
-  foodPriceIndex: number
+  techLayoffIndex: number
   inequalityIndex: number
   stabilityIndex: number
   eventLog: string[]
@@ -37,8 +37,8 @@ export type SliderInputs = {
   transfers: number
   laborProtection: number
   corporateConcentration: number
-  energyCost: number
-  supplyChainResilience: number
+  openSourceAccess: number
+  talentPipelineStrength: number
 }
 
 export type ModelParams = {
@@ -51,21 +51,21 @@ export type ModelParams = {
   laborProtectionLayoffDamp: number
   employmentFloorRatio: number
   kComplementarityWage: number
-  kFoodFromLogistics: number
-  kEnergyPassThrough: number
+  kLayoffFromInfra: number
+  kOpenSourcePassThrough: number
   kIneqFromAI: number
   kConcentrationLaborShare: number
   gdpIndexMin: number
   gdpIndexMax: number
-  foodPriceIndexMin: number
-  foodPriceIndexMax: number
+  techLayoffIndexMin: number
+  techLayoffIndexMax: number
   inequalityIndexMin: number
   inequalityIndexMax: number
   stabilityMin: number
   stabilityMax: number
   laborForce: number
   stabilityWeightUnemployment: number
-  stabilityWeightFoodInflation: number
+  stabilityWeightTechLayoffs: number
   stabilityWeightInequality: number
   sliders: {
     [key: string]: {

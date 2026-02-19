@@ -4,25 +4,25 @@
   "slowdownThreshold": 40,
   "stabilityAdoptionMinMultiplier": 0.1,
   "stabilityAdoptionMaxMultiplier": 1.0,
-  "kSubstitution": 0.18,
+  "kSubstitution": 0.22,
   "laborProtectionLayoffDamp": 0.5,
   "employmentFloorRatio": 0.05,
   "kComplementarityWage": 0.06,
-  "kFoodFromLogistics": 0.10,
-  "kEnergyPassThrough": 0.08,
+  "kLayoffFromInfra": 0.12,
+  "kOpenSourcePassThrough": 0.06,
   "kIneqFromAI": 0.015,
   "kConcentrationLaborShare": 0.025,
   "gdpIndexMin": 50,
   "gdpIndexMax": 200,
-  "foodPriceIndexMin": 0.8,
-  "foodPriceIndexMax": 3.0,
+  "techLayoffIndexMin": 0.8,
+  "techLayoffIndexMax": 3.0,
   "inequalityIndexMin": 0.5,
   "inequalityIndexMax": 3.0,
   "stabilityMin": 0,
   "stabilityMax": 100,
-  "laborForce": 48744565,
+  "laborForce": 8625000,
   "stabilityWeightUnemployment": 1.8,
-  "stabilityWeightFoodInflation": 0.8,
+  "stabilityWeightTechLayoffs": 0.8,
   "stabilityWeightInequality": 8.0,
   "sliders": {
     "aiCapability": {
@@ -31,7 +31,7 @@
       "max": 1,
       "step": 0.01,
       "default": 0.3,
-      "tooltip": "Overall power of AI systems. Higher values accelerate automation and wage gains for complementary roles."
+      "tooltip": "Overall power of AI systems. Higher values accelerate automation of tech roles and increase wage gains for AI-complementary positions."
     },
     "adoptionSpeed": {
       "label": "Adoption Speed",
@@ -39,7 +39,7 @@
       "max": 1,
       "step": 0.01,
       "default": 0.4,
-      "tooltip": "How quickly businesses deploy AI. Drives effective automation rate alongside AI capability."
+      "tooltip": "How quickly tech companies deploy AI tools. Drives effective automation rate alongside AI capability."
     },
     "regulation": {
       "label": "Regulation",
@@ -47,7 +47,7 @@
       "max": 1,
       "step": 0.01,
       "default": 0.3,
-      "tooltip": "Government AI regulation stringency. Slows adoption and reduces job displacement."
+      "tooltip": "Government AI regulation stringency. Slows adoption and reduces tech job displacement."
     },
     "retraining": {
       "label": "Retraining Programs",
@@ -55,7 +55,7 @@
       "max": 1,
       "step": 0.01,
       "default": 0.2,
-      "tooltip": "Investment in worker retraining. Reduces job loss rate and raises the employment floor — workers who retrain find new roles rather than staying unemployed."
+      "tooltip": "Investment in worker upskilling. Reduces job loss rate and raises the employment floor — tech workers who retrain find new roles rather than staying unemployed."
     },
     "transfers": {
       "label": "Social Transfers",
@@ -63,7 +63,7 @@
       "max": 1,
       "step": 0.01,
       "default": 0.2,
-      "tooltip": "Government transfer payments (UBI-style). Compresses inequality, improves food affordability for displaced workers (reduces the stability hit from food prices, not the price itself), and stabilizes household spending."
+      "tooltip": "Government transfer payments (UBI-style). Compresses inequality, funds retraining pipelines for displaced tech workers (reduces the stability hit from layoff waves, not the layoffs themselves), and stabilizes household spending."
     },
     "laborProtection": {
       "label": "Labor Protections",
@@ -71,7 +71,7 @@
       "max": 1,
       "step": 0.01,
       "default": 0.3,
-      "tooltip": "Strength of labor laws against layoffs. Reduces per-year job loss rate."
+      "tooltip": "Strength of labor laws against layoffs. Reduces per-year job loss rate in the tech sector."
     },
     "corporateConcentration": {
       "label": "Corporate Concentration",
@@ -79,23 +79,23 @@
       "max": 1,
       "step": 0.01,
       "default": 0.4,
-      "tooltip": "Market power of large firms. Suppresses wage growth and increases inequality."
+      "tooltip": "Market power of large tech firms. Suppresses wage growth and increases inequality as fewer companies capture more of the AI productivity gains."
     },
-    "energyCost": {
-      "label": "Energy Cost Shock",
+    "openSourceAccess": {
+      "label": "Open Source AI Access",
       "min": -0.5,
       "max": 0.5,
       "step": 0.01,
       "default": 0.0,
-      "tooltip": "Energy price deviation from baseline. Positive = higher costs, driving food price inflation."
+      "tooltip": "Availability of open-source AI models. Positive = widely available (lowers barrier to automation, accelerates displacement of mid-tier tech roles). Negative = restricted/proprietary only (slows displacement but concentrates AI power among large firms)."
     },
-    "supplyChainResilience": {
-      "label": "Supply Chain Resilience",
+    "talentPipelineStrength": {
+      "label": "Talent Pipeline Strength",
       "min": 0,
       "max": 1,
       "step": 0.01,
       "default": 0.5,
-      "tooltip": "Robustness of logistics networks. Higher values dampen food price spikes from logistics job loss."
+      "tooltip": "Robustness of tech talent supply (universities, bootcamps, retraining programs). Higher values dampen tech layoff spirals when infrastructure roles are displaced — new talent absorbs the gaps faster."
     }
   }
 }

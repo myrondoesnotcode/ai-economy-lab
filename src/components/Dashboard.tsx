@@ -37,8 +37,8 @@ export function Dashboard({ history, currentYear }: Props) {
   const unemColor = latest.unemploymentRate > 0.15 ? "#ef4444"
     : latest.unemploymentRate > 0.09 ? "#f97316" : "#22c55e"
 
-  const foodColor = latest.foodPriceIndex > 1.5 ? "#ef4444"
-    : latest.foodPriceIndex > 1.2 ? "#f97316" : "#22c55e"
+  const techLayoffColor = latest.techLayoffIndex > 1.5 ? "#ef4444"
+    : latest.techLayoffIndex > 1.2 ? "#f97316" : "#22c55e"
 
   const gdpColor = latest.gdpIndex < 80 ? "#ef4444"
     : latest.gdpIndex < 95 ? "#f97316" : "#22c55e"
@@ -47,7 +47,7 @@ export function Dashboard({ history, currentYear }: Props) {
     : latest.inequalityIndex > 1.4 ? "#f97316" : "#22c55e"
 
   const unemploymentPenalty = latest.unemploymentRate * 100 * 1.8
-  const foodPenalty = (latest.foodPriceIndex - 1) * 100 * 0.8
+  const techLayoffPenalty = (latest.techLayoffIndex - 1) * 100 * 0.8
   const inequalityPenalty = (latest.inequalityIndex - 1.0) * 8.0
 
   return (
@@ -71,7 +71,7 @@ export function Dashboard({ history, currentYear }: Props) {
                 <li><strong>Above 100</strong> — AI productivity gains are outpacing job losses. The economy is growing.</li>
                 <li><strong>Below 100</strong> — displacement is shrinking output. Workers who lost their jobs can't spend, which contracts the economy further.</li>
               </ul>
-              <p><strong>How it's calculated:</strong> Sum of (workers × wages) across all 25 occupations, divided by the year-one total. It rises when high-skill wages surge, even if many people are unemployed — so a high GDP doesn't necessarily mean widespread prosperity.</p>
+              <p><strong>How it's calculated:</strong> Sum of (workers × wages) across all 22 occupations, divided by the year-one total. It rises when high-skill wages surge, even if many people are unemployed — so a high GDP doesn't necessarily mean widespread prosperity.</p>
             </InfoPanel>
           }
         />
@@ -82,7 +82,7 @@ export function Dashboard({ history, currentYear }: Props) {
           color={unemColor}
           info={
             <InfoPanel title="Unemployment Rate">
-              <p>The share of the labor force (48.7 million tracked workers) without employment in one of the 25 modeled occupations.</p>
+              <p>The share of the labor force (~8.6 million tracked workers) without employment in one of the 22 modeled tech occupations.</p>
               <ul>
                 <li><strong>~8% is structural baseline</strong> — this represents frictional unemployment (workers between jobs) and people in sectors not tracked by this model. It exists even before any AI disruption.</li>
                 <li><strong>Above 12%</strong> — displacement from AI automation is now measurably above normal churn.</li>
@@ -94,21 +94,21 @@ export function Dashboard({ history, currentYear }: Props) {
           }
         />
         <MetricCard
-          label="Food Price Index"
-          value={latest.foodPriceIndex.toFixed(3)}
+          label="Tech Layoff Index"
+          value={latest.techLayoffIndex.toFixed(3)}
           sub="baseline = 1.000"
-          color={foodColor}
+          color={techLayoffColor}
           info={
-            <InfoPanel title="Food Price Index">
-              <p>Relative cost of food compared to the starting year, where 1.000 = no change.</p>
+            <InfoPanel title="Tech Layoff Index">
+              <p>Measures the intensity of tech sector layoff pressure relative to baseline, where 1.000 = normal churn.</p>
               <ul>
-                <li><strong>1.000</strong> — food costs the same as in 2025.</li>
-                <li><strong>1.200</strong> — 20% more expensive. Noticeable but manageable.</li>
-                <li><strong>1.500</strong> — 50% more expensive. Significant household budget pressure.</li>
-                <li><strong>2.000+</strong> — food has doubled. Severe food insecurity risk, especially for lower-income households.</li>
+                <li><strong>1.000</strong> — normal tech sector turnover, comparable to pre-AI baseline.</li>
+                <li><strong>1.200</strong> — 20% above baseline. Elevated layoffs but within historical norms for tech downturns.</li>
+                <li><strong>1.500</strong> — 50% above baseline. Significant wave of displacement; hiring freezes and mass layoffs dominating headlines.</li>
+                <li><strong>2.000+</strong> — structural breakdown. Comparable to the dot-com bust, but driven by automation rather than market correction.</li>
               </ul>
-              <p><strong>What drives it:</strong> When logistics workers (truck drivers, warehouse staff, freight movers) are displaced, fewer hands move food from farms to stores — causing delays, spoilage, and cost increases. Energy price shocks compound this.</p>
-              <p><strong>What moderates it:</strong> High supply chain resilience, social transfer payments, and keeping energy costs low.</p>
+              <p><strong>What drives it:</strong> When infrastructure roles (DevOps, DBAs, network admins) are displaced before AIOps is mature, reliability gaps cascade into broader instability. Open-source AI access accelerates displacement of mid-tier roles.</p>
+              <p><strong>What moderates it:</strong> Strong talent pipelines (bootcamps, retraining programs) absorb infrastructure gaps faster. Social transfers cushion displaced workers' impact on the broader economy.</p>
             </InfoPanel>
           }
         />
@@ -136,7 +136,7 @@ export function Dashboard({ history, currentYear }: Props) {
       <StabilityMeter
         value={latest.stabilityIndex}
         unemploymentPenalty={unemploymentPenalty}
-        foodPenalty={foodPenalty}
+        techLayoffPenalty={techLayoffPenalty}
         inequalityPenalty={inequalityPenalty}
       />
 

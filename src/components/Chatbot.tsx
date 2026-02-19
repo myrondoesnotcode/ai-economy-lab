@@ -21,8 +21,8 @@ const SLIDER_LABELS: Record<keyof SliderInputs, string> = {
   transfers: "Social Transfers",
   laborProtection: "Labor Protections",
   corporateConcentration: "Corporate Concentration",
-  energyCost: "Energy Cost Shock",
-  supplyChainResilience: "Supply Chain Resilience",
+  openSourceAccess: "Open Source AI Access",
+  talentPipelineStrength: "Talent Pipeline Strength",
 }
 
 const STARTER_CHIPS = [
@@ -44,25 +44,25 @@ function buildSystemPrompt(history: SimulationState[], sliders: SliderInputs): s
   const latest = history[history.length - 1]
   const recentEvents = [...latest.eventLog].slice(-3).join("\n")
 
-  return `You are an AI economist assistant embedded in AI Economy Lab — a simulation of AI's impact on the US economy over 10 years (2025–2035).
+  return `You are an AI economist assistant embedded in AI Economy Lab — a simulation of AI's impact on the US tech sector over 10 years (2025–2035). The simulation tracks ~7.9 million workers across 22 tech occupations (software engineers, ML engineers, data scientists, DevOps, QA, IT support, product managers, etc.) anchored to BLS May 2024 salary data.
 
 CURRENT SIMULATION STATE (Year ${latest.year}):
 - GDP Index: ${latest.gdpIndex.toFixed(1)} (100 = baseline 2025)
 - Unemployment: ${(latest.unemploymentRate * 100).toFixed(1)}% (structural baseline ~8%)
-- Food Price Index: ${latest.foodPriceIndex.toFixed(3)} (1.000 = no change from baseline)
+- Tech Layoff Index: ${latest.techLayoffIndex.toFixed(3)} (1.000 = baseline churn; higher = worsening layoff waves)
 - Inequality Index: ${latest.inequalityIndex.toFixed(2)} (1.00 = baseline)
 - Stability Index: ${latest.stabilityIndex.toFixed(1)}/100 (${getStabilityLabel(latest.stabilityIndex)})
 
 CURRENT SLIDER SETTINGS:
 - AI Capability: ${sliders.aiCapability} (0=none, 1=maximum AI power)
-- Adoption Speed: ${sliders.adoptionSpeed} (how fast firms deploy AI)
-- Regulation: ${sliders.regulation} (0=none, 1=heavy government oversight)
-- Retraining Programs: ${sliders.retraining} (worker transition investment)
-- Social Transfers: ${sliders.transfers} (UBI-style payments to displaced workers)
-- Labor Protections: ${sliders.laborProtection} (legal barriers to layoffs)
-- Corporate Concentration: ${sliders.corporateConcentration} (market power of large firms)
-- Energy Cost Shock: ${sliders.energyCost} (-0.5=cheap energy, +0.5=expensive)
-- Supply Chain Resilience: ${sliders.supplyChainResilience} (logistics network robustness)
+- Adoption Speed: ${sliders.adoptionSpeed} (how fast tech firms deploy AI tools)
+- Regulation: ${sliders.regulation} (0=none, 1=heavy government AI oversight)
+- Retraining Programs: ${sliders.retraining} (investment in worker upskilling and bootcamps)
+- Social Transfers: ${sliders.transfers} (UBI-style payments to displaced tech workers)
+- Labor Protections: ${sliders.laborProtection} (legal barriers to tech layoffs)
+- Corporate Concentration: ${sliders.corporateConcentration} (market power of large tech firms)
+- Open Source AI Access: ${sliders.openSourceAccess} (-0.5=proprietary only, 0=neutral, +0.5=widely available open source)
+- Talent Pipeline Strength: ${sliders.talentPipelineStrength} (robustness of tech talent supply via universities, bootcamps, retraining)
 
 RECENT EVENTS:
 ${recentEvents}
@@ -72,8 +72,8 @@ INSTRUCTIONS:
 2. Base all numbers on the state above — do not invent figures.
 3. If the user asks to change one or more sliders, include this exact format for each change:
    SLIDER_CHANGE: {"key": "sliderName", "value": 0.8}
-   Valid keys: aiCapability, adoptionSpeed, regulation, retraining, transfers, laborProtection, corporateConcentration, energyCost, supplyChainResilience
-   Valid ranges: most 0–1, energyCost –0.5 to 0.5
+   Valid keys: aiCapability, adoptionSpeed, regulation, retraining, transfers, laborProtection, corporateConcentration, openSourceAccess, talentPipelineStrength
+   Valid ranges: most 0–1, openSourceAccess –0.5 to 0.5
 4. Do NOT show the SLIDER_CHANGE lines in your visible response text — they are parsed automatically.
 5. After slider changes, briefly explain what effect the change will have.`
 }
@@ -162,8 +162,8 @@ export function Chatbot({ history, sliders, onSliderChange }: Props) {
       if (changes.length > 0) {
         changes.forEach(c => {
           const clamped = Math.max(
-            c.key === "energyCost" ? -0.5 : 0,
-            Math.min(c.key === "energyCost" ? 0.5 : 1, c.value)
+            c.key === "openSourceAccess" ? -0.5 : 0,
+            Math.min(c.key === "openSourceAccess" ? 0.5 : 1, c.value)
           )
           onSliderChange(c.key, clamped)
         })

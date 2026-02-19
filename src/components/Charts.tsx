@@ -12,7 +12,7 @@ interface Props {
 
 const COLORS = {
   gdp: "#6366f1",
-  food: "#f97316",
+  techLayoff: "#f97316",
   stability: "#22c55e",
 }
 
@@ -34,7 +34,7 @@ export function Charts({ history }: Props) {
   const timeData = history.map(s => ({
     year: s.year,
     gdp: Math.round(s.gdpIndex * 10) / 10,
-    food: Math.round(s.foodPriceIndex * 100) / 100,
+    techLayoff: Math.round(s.techLayoffIndex * 100) / 100,
     stability: Math.round(s.stabilityIndex * 10) / 10,
   }))
 
@@ -70,23 +70,23 @@ export function Charts({ history }: Props) {
       {/* Employment bar chart */}
       <div className="chart-card">
         <div className="chart-card-header">
-          <h3 className="chart-title">Employment by Occupation — 25 tracked roles (millions)</h3>
+          <h3 className="chart-title">Employment by Occupation — 22 tracked tech roles (millions)</h3>
           <InfoPanel title="Employment by Occupation">
-            <p>This chart shows the 25 occupations tracked by this simulation — together about <strong>45 million workers</strong>, selected to represent the jobs most exposed to AI disruption. The full US labor force is ~160 million; the remaining ~115 million are not modeled here.</p>
+            <p>This chart shows the 22 tech occupations tracked by this simulation — together about <strong>7.9 million workers</strong>, representing the US tech sector jobs most exposed to AI disruption (out of ~160M total US workers).</p>
             <ul>
               <li><strong>Grey bars (Baseline)</strong> — how many workers were in each job before AI disruption. This is fixed and doesn't change.</li>
               <li><strong>Purple bars (Current)</strong> — how many workers are still employed in that job right now, after automation has had its effect.</li>
               <li><strong>A shrinking purple bar</strong> means AI has displaced workers from that role. The further it falls short of the grey bar, the worse the displacement.</li>
-              <li><strong>Numbers on the X-axis</strong> are millions of workers — so "4" means 4 million people.</li>
+              <li><strong>Numbers on the X-axis</strong> are millions of workers — so "1.6" means 1.6 million people.</li>
             </ul>
-            <p>Jobs with high <em>routine scores</em> (cashiers, data entry, office clerks) shrink fastest. Jobs with high <em>social or complementarity scores</em> (nurses, managers, ML engineers) are more protected or even grow in value.</p>
+            <p>Jobs with high <em>routine scores</em> (data entry, QA engineers, computer programmers) shrink fastest. Jobs with high <em>complementarity scores</em> (ML engineers, cloud architects, cybersecurity analysts) are more protected or even see wage gains.</p>
           </InfoPanel>
         </div>
         <ResponsiveContainer width="100%" height={Math.max(400, employmentData.length * 22)}>
           <BarChart data={employmentData} layout="vertical" margin={{ left: 10, right: 20, top: 5, bottom: 24 }}>
             <XAxis
               type="number"
-              domain={[0, 5]}
+              domain={[0, 2]}
               tick={{ fontSize: 11, fill: "#9ca3af" }}
               label={{ value: "workers (millions)", position: "insideBottomRight", offset: -4, fontSize: 10, fill: "#6b7280" }}
             />
@@ -140,43 +140,42 @@ export function Charts({ history }: Props) {
         </ResponsiveContainer>
       </div>
 
-      {/* Food price line chart */}
+      {/* Tech Layoff Index line chart */}
       <div className="chart-card">
         <div className="chart-card-header">
-          <h3 className="chart-title">Food Price Index over Time (baseline = 1.0)</h3>
-          <InfoPanel title="Food Price Index">
-            <p>This tracks how expensive food has become relative to the starting year, where 1.0 = baseline prices.</p>
+          <h3 className="chart-title">Tech Layoff Index over Time (baseline = 1.0)</h3>
+          <InfoPanel title="Tech Layoff Index">
+            <p>This tracks the intensity of tech sector layoff pressure over the simulation, where 1.0 = baseline churn and higher values indicate worsening displacement waves.</p>
             <ul>
-              <li><strong>1.0</strong> — food costs the same as at the start of the simulation.</li>
-              <li><strong>1.5</strong> — food is 50% more expensive than baseline.</li>
-              <li><strong>2.0</strong> — food has doubled in price.</li>
+              <li><strong>1.0</strong> — normal tech sector turnover, comparable to pre-AI baseline.</li>
+              <li><strong>1.5</strong> — 50% above baseline. Mass layoffs dominating headlines; hiring freezes across the sector.</li>
+              <li><strong>2.0+</strong> — structural breakdown. Comparable to dot-com bust intensity, but driven by automation.</li>
             </ul>
             <p><strong>What drives it up:</strong></p>
             <ul>
-              <li><strong>Logistics job losses</strong> — fewer truck drivers, warehouse workers, and freight movers means slower delivery, more spoilage, and higher costs passed to consumers.</li>
-              <li><strong>Energy cost shocks</strong> — higher fuel prices increase transportation and refrigeration costs throughout the food supply chain.</li>
+              <li><strong>Infrastructure role displacement</strong> — when DevOps, DBAs, and network admins are displaced before AIOps systems are mature, reliability gaps cascade into broader instability.</li>
+              <li><strong>Open-source AI access</strong> — widely available open-source models accelerate displacement of mid-tier roles (web developers, QA engineers, programmers).</li>
             </ul>
-            <p><strong>What keeps it down:</strong> High supply chain resilience (alternative logistics routes, automation in warehousing) and social transfers (which support food purchasing power) both dampen price increases.</p>
-            <p>Food inflation hits low-income households hardest — they spend a larger fraction of their income on food than wealthier households do.</p>
+            <p><strong>What keeps it down:</strong> Strong talent pipelines (bootcamps, retraining programs) fill infrastructure gaps faster. Social transfers cushion displaced workers and dampen the broader economic hit.</p>
           </InfoPanel>
         </div>
         <ResponsiveContainer width="100%" height={200}>
           <LineChart data={timeData} margin={{ left: 0, right: 20, top: 5, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#9ca3af" }} />
-            <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} domain={["auto", "auto"]} />
+            <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} domain={[0.8, "auto"]} />
             <Tooltip
               contentStyle={{ background: "#1f2937", border: "1px solid #374151", borderRadius: 6 }}
               labelStyle={{ color: "#f9fafb" }}
-              itemStyle={{ color: COLORS.food }}
+              itemStyle={{ color: COLORS.techLayoff }}
             />
             <Line
               type="monotone"
-              dataKey="food"
-              stroke={COLORS.food}
+              dataKey="techLayoff"
+              stroke={COLORS.techLayoff}
               strokeWidth={2}
               dot={false}
-              name="Food Price Index"
+              name="Tech Layoff Index"
             />
           </LineChart>
         </ResponsiveContainer>
@@ -190,7 +189,7 @@ export function Charts({ history }: Props) {
             <p>This chart shows how social and economic stability evolves across the 10-year simulation. It starts at 100 and falls as conditions worsen.</p>
             <p><strong>How it's calculated:</strong></p>
             <ul>
-              <li>Stability = 100 − (unemployment penalty) − (food price penalty) − (inequality penalty)</li>
+              <li>Stability = 100 − (unemployment penalty) − (tech layoff index penalty) − (inequality penalty)</li>
               <li>Unemployment has the largest weight — mass joblessness is the most destabilizing factor in the model.</li>
             </ul>
             <p><strong>Thresholds to watch:</strong></p>

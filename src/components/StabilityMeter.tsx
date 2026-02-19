@@ -4,7 +4,7 @@ interface Props {
   value: number
   tooltip?: string
   unemploymentPenalty: number
-  foodPenalty: number
+  techLayoffPenalty: number
   inequalityPenalty: number
 }
 
@@ -22,11 +22,11 @@ function getLabel(value: number): string {
   return "Critical"
 }
 
-export function StabilityMeter({ value, unemploymentPenalty, foodPenalty, inequalityPenalty }: Props) {
+export function StabilityMeter({ value, unemploymentPenalty, techLayoffPenalty, inequalityPenalty }: Props) {
   const color = getColor(value)
   const label = getLabel(value)
   const pct = Math.max(0, Math.min(100, value))
-  const total = unemploymentPenalty + foodPenalty + inequalityPenalty
+  const total = unemploymentPenalty + techLayoffPenalty + inequalityPenalty
 
   return (
     <div className="stability-meter">
@@ -45,7 +45,7 @@ export function StabilityMeter({ value, unemploymentPenalty, foodPenalty, inequa
       <div className="stability-value" style={{ color }}>
         {value.toFixed(1)} / 100
         <span className="stability-breakdown">
-          &nbsp;·&nbsp; −{unemploymentPenalty.toFixed(1)} unem &nbsp;·&nbsp; −{foodPenalty.toFixed(1)} food &nbsp;·&nbsp; −{inequalityPenalty.toFixed(1)} ineq
+          &nbsp;·&nbsp; −{unemploymentPenalty.toFixed(1)} unem &nbsp;·&nbsp; −{techLayoffPenalty.toFixed(1)} layoff &nbsp;·&nbsp; −{inequalityPenalty.toFixed(1)} ineq
         </span>
       </div>
       <InfoPanel title="Stability Index">
@@ -56,26 +56,26 @@ export function StabilityMeter({ value, unemploymentPenalty, foodPenalty, inequa
         </p>
         <p><strong>The formula:</strong></p>
         <p style={{ fontFamily: "monospace", fontSize: "0.76rem", background: "rgba(0,0,0,0.3)", padding: "8px 10px", borderRadius: 5 }}>
-          Stability = 100 − (unemployment × 1.8) − (food inflation × 0.8) − (inequality gap × 8.0)
+          Stability = 100 − (unemployment × 1.8) − (tech layoff index × 0.8) − (inequality gap × 8.0)
         </p>
         <p><strong>Right now, the score of {value.toFixed(1)} breaks down as:</strong></p>
         <ul>
           <li>Starting from 100</li>
           <li>Unemployment is dragging it down by <strong style={{ color: "#ef4444" }}>−{unemploymentPenalty.toFixed(1)}</strong> points</li>
-          <li>Food prices are dragging it down by <strong style={{ color: "#f97316" }}>−{foodPenalty.toFixed(1)}</strong> points</li>
+          <li>Tech layoff pressure is dragging it down by <strong style={{ color: "#f97316" }}>−{techLayoffPenalty.toFixed(1)}</strong> points</li>
           <li>Inequality is dragging it down by <strong style={{ color: "#eab308" }}>−{inequalityPenalty.toFixed(1)}</strong> points</li>
           <li>Total drag: <strong>−{total.toFixed(1)}</strong> → score = <strong style={{ color }}>{value.toFixed(1)}</strong></li>
         </ul>
         <p><strong>What the labels mean:</strong></p>
         <ul>
-          <li><strong style={{ color: "#22c55e" }}>Stable (70–100)</strong> — society is absorbing disruption. Workers are finding new jobs, prices are manageable, inequality hasn't exploded.</li>
-          <li><strong style={{ color: "#eab308" }}>Strained (45–70)</strong> — visible stress. Unemployment is rising, safety nets are under pressure, political trust is fraying.</li>
-          <li><strong style={{ color: "#f97316" }}>Unstable (25–45)</strong> — serious breakdown risk. Comparable to Rust Belt deindustrialization or Southern Europe post-2008 austerity.</li>
-          <li><strong style={{ color: "#ef4444" }}>Critical (0–25)</strong> — systemic crisis. Historical analogues: Great Depression, post-WWII reconstruction economies.</li>
+          <li><strong style={{ color: "#22c55e" }}>Stable (70–100)</strong> — the tech sector is absorbing disruption. Workers are retraining, layoff waves are manageable, inequality hasn't exploded.</li>
+          <li><strong style={{ color: "#eab308" }}>Strained (45–70)</strong> — visible stress. Layoff waves are rising, safety nets are under pressure, political trust in the tech industry is fraying.</li>
+          <li><strong style={{ color: "#f97316" }}>Unstable (25–45)</strong> — serious breakdown risk. Comparable to the dot-com bust or post-2008 tech contraction, but structural.</li>
+          <li><strong style={{ color: "#ef4444" }}>Critical (0–25)</strong> — systemic crisis in the tech labor market. Mass displacement without recovery pathways.</li>
         </ul>
         <p>
-          Unemployment has the biggest weight (1.8×) because joblessness is self-reinforcing — unemployed workers spend less, which reduces demand, which causes more layoffs.
-          Inequality gets a high weight (8.0×) because even small increases in concentration rapidly erode social cohesion.
+          Unemployment has the biggest weight (1.8×) because joblessness is self-reinforcing — displaced tech workers spend less, which contracts the broader economy.
+          Inequality gets a high weight (8.0×) because even small increases in concentration rapidly erode social cohesion and political trust.
         </p>
       </InfoPanel>
     </div>
