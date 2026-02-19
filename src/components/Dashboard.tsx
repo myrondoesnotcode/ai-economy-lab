@@ -3,10 +3,19 @@ import { StabilityMeter } from "./StabilityMeter"
 import { Charts } from "./Charts"
 import { EventLog } from "./EventLog"
 import { InfoPanel } from "./InfoPanel"
+import { TimelineBar } from "./TimelineBar"
 
 interface Props {
   history: SimulationState[]
   currentYear: number
+  viewIndex: number
+  totalYears: number
+  playing: boolean
+  currentHorizon: number
+  onScrub: (i: number) => void
+  onPlayPause: () => void
+  onJumpToEnd: () => void
+  onHorizonChange: (years: number) => void
 }
 
 interface MetricCardProps {
@@ -31,7 +40,18 @@ function MetricCard({ label, value, sub, color, tooltip, info }: MetricCardProps
   )
 }
 
-export function Dashboard({ history, currentYear }: Props) {
+export function Dashboard({
+  history,
+  currentYear,
+  viewIndex,
+  totalYears,
+  playing,
+  currentHorizon,
+  onScrub,
+  onPlayPause,
+  onJumpToEnd,
+  onHorizonChange,
+}: Props) {
   const latest = history[history.length - 1]
 
   const unemColor = latest.unemploymentRate > 0.15 ? "#ef4444"
@@ -56,6 +76,17 @@ export function Dashboard({ history, currentYear }: Props) {
         <h1 className="dashboard-title">AI Economy Lab</h1>
         <div className="dashboard-year">Year: <strong>{currentYear}</strong></div>
       </div>
+
+      <TimelineBar
+        viewIndex={viewIndex}
+        totalYears={totalYears}
+        playing={playing}
+        currentHorizon={currentHorizon}
+        onScrub={onScrub}
+        onPlayPause={onPlayPause}
+        onJumpToEnd={onJumpToEnd}
+        onHorizonChange={onHorizonChange}
+      />
 
       {/* Top metrics */}
       <div className="metrics-grid">

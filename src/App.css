@@ -941,6 +941,156 @@ body {
   }
 }
 
+/* ── Timeline Bar ─────────────────────────────────────────────────────────── */
+.timeline-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.timeline-scrubber-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.timeline-scrubber-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.timeline-scrubber {
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  outline: none;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.timeline-scrubber::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+  transition: box-shadow 0.15s;
+}
+
+.timeline-scrubber::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.4);
+}
+
+.timeline-scrubber::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: none;
+}
+
+.timeline-tick-labels {
+  display: flex;
+  justify-content: space-between;
+}
+
+.timeline-tick-start,
+.timeline-tick-end {
+  font-size: 0.65rem;
+  color: var(--muted);
+}
+
+.timeline-year-label {
+  font-size: 1rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent2);
+  min-width: 38px;
+  text-align: center;
+  line-height: 1;
+}
+
+.timeline-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--fg);
+  font-size: 0.95rem;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.timeline-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent2);
+}
+
+.timeline-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.timeline-playpause {
+  font-size: 0.85rem;
+}
+
+.timeline-horizon-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.timeline-horizon-label {
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.timeline-horizon-btn {
+  padding: 4px 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.timeline-horizon-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent2);
+}
+
+.timeline-horizon-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
 @media (max-width: 480px) {
   .metrics-grid {
     grid-template-columns: repeat(2, 1fr);
