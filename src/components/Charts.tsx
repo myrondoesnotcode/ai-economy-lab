@@ -86,6 +86,7 @@ export function Charts({ history }: Props) {
           <BarChart data={employmentData} layout="vertical" margin={{ left: 10, right: 20, top: 5, bottom: 24 }}>
             <XAxis
               type="number"
+              domain={[0, 5]}
               tick={{ fontSize: 11, fill: "#9ca3af" }}
               label={{ value: "workers (millions)", position: "insideBottomRight", offset: -4, fontSize: 10, fill: "#6b7280" }}
             />
