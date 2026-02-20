@@ -19,6 +19,7 @@ const COLORS = {
 
 export function Charts({ history, theme = "dark" }: Props) {
   const latest = history[history.length - 1]
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 600
 
   const isLight = theme === "light"
   const tickColor = isLight ? "#374151" : "#9ca3af"
@@ -31,10 +32,11 @@ export function Charts({ history, theme = "dark" }: Props) {
   const legendColor = isLight ? "#374151" : "#9ca3af"
 
   // Employment bar chart data — keep full name for tooltip, truncated for axis
+  const nameLimit = isMobile ? 18 : 28
   const employmentData = latest.occupations.map(o => {
     const base = baseOccupations.find(b => b.id === o.id)!
     return {
-      name: base.name.length > 28 ? base.name.slice(0, 28) + "…" : base.name,
+      name: base.name.length > nameLimit ? base.name.slice(0, nameLimit) + "…" : base.name,
       fullName: base.name,
       employment: Math.round(o.employment / 1_000_000 * 10) / 10,
       baseline: Math.round(base.employment / 1_000_000 * 10) / 10,
@@ -104,8 +106,8 @@ export function Charts({ history, theme = "dark" }: Props) {
             <YAxis
               type="category"
               dataKey="name"
-              width={210}
-              tick={{ fontSize: 10, fill: yAxisTickColor }}
+              width={isMobile ? 130 : 210}
+              tick={{ fontSize: isMobile ? 8 : 10, fill: yAxisTickColor }}
             />
             <Tooltip content={<BarTooltip />} />
             <Bar dataKey="baseline" fill={barBaseline} name="Baseline" radius={[0, 2, 2, 0]} />

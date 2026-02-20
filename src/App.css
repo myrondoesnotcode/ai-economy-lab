@@ -1107,16 +1107,32 @@ body {
 
   .dashboard-wrapper {
     width: 100%;
-    padding: 16px;
-    gap: 14px;
-    /* Space at bottom for floating button */
-    padding-bottom: 72px;
+    padding: 12px;
+    gap: 12px;
+    padding-bottom: 80px; /* space for floating Controls button */
+  }
+
+  /* Header: stack title above year+toggle on small screens */
+  .dashboard-header {
+    flex-wrap: wrap;
+    gap: 6px;
   }
 
   .dashboard-title {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
+    flex: 1 1 100%;
   }
 
+  .dashboard-year {
+    font-size: 0.82rem;
+  }
+
+  .theme-toggle {
+    font-size: 0.72rem;
+    padding: 4px 10px;
+  }
+
+  /* Metrics: 2-column grid */
   .metrics-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
@@ -1126,13 +1142,121 @@ body {
     font-size: 1.3rem;
   }
 
+  .metric-label {
+    font-size: 0.68rem;
+  }
+
+  /* Timeline: tighten up */
+  .timeline-bar {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .timeline-horizon-row {
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  .timeline-horizon-label {
+    font-size: 0.68rem;
+  }
+
+  .timeline-horizon-btn {
+    padding: 3px 9px;
+    font-size: 0.72rem;
+  }
+
+  .timeline-year-label {
+    font-size: 0.85rem;
+    min-width: 32px;
+  }
+
+  .timeline-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 0.85rem;
+  }
+
+  /* Charts */
   .chart-card {
     padding: 12px;
+  }
+
+  .chart-title {
+    font-size: 0.72rem;
+  }
+
+  /* Employment bar chart: shrink Y-axis label width on mobile */
+  .bar-chart-mobile-wrap {
     overflow-x: auto;
   }
 
+  /* Stability meter */
+  .stability-breakdown {
+    font-size: 0.65rem;
+  }
+
+  /* Chatbot */
+  .chatbot-messages {
+    max-height: 260px;
+  }
+
+  .chatbot-chips {
+    gap: 4px;
+  }
+
+  .chatbot-chip {
+    font-size: 0.68rem;
+    padding: 3px 8px;
+  }
+
+  /* Event log */
   .event-log-body {
-    max-height: 320px;
+    max-height: 280px;
+  }
+
+  .event-body {
+    font-size: 0.74rem;
+  }
+
+  /* About section */
+  .about-body {
+    font-size: 0.76rem;
+  }
+
+  /* Preset grid: 2 columns already, just tighten */
+  .preset-grid {
+    gap: 5px;
+  }
+
+  .preset-btn {
+    padding: 7px 8px;
+  }
+
+  .preset-desc {
+    font-size: 0.6rem;
+  }
+
+  /* Mode toggle button smaller */
+  .mode-toggle {
+    font-size: 0.66rem;
+    padding: 4px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dashboard-wrapper {
+    padding: 10px;
+    padding-bottom: 80px;
+  }
+
+  /* Stack year + toggle vertically if they overflow */
+  .dashboard-header > div {
+    flex-wrap: wrap;
   }
 }
 
