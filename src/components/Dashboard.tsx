@@ -15,10 +15,12 @@ interface Props {
   playing: boolean
   currentHorizon: number
   mode: Mode
+  theme: "dark" | "light"
   onScrub: (i: number) => void
   onPlayPause: () => void
   onJumpToEnd: () => void
   onHorizonChange: (years: number) => void
+  onThemeToggle: () => void
 }
 
 interface MetricCardProps {
@@ -51,10 +53,12 @@ export function Dashboard({
   playing,
   currentHorizon,
   mode,
+  theme,
   onScrub,
   onPlayPause,
   onJumpToEnd,
   onHorizonChange,
+  onThemeToggle,
 }: Props) {
   const latest = history[history.length - 1]
 
@@ -78,7 +82,12 @@ export function Dashboard({
     <main className="dashboard">
       <div className="dashboard-header">
         <h1 className="dashboard-title">AI Economy Lab</h1>
-        <div className="dashboard-year">Year: <strong>{currentYear}</strong></div>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div className="dashboard-year">Year: <strong>{currentYear}</strong></div>
+          <button className="theme-toggle" onClick={onThemeToggle} title="Toggle day/night mode">
+            {theme === "dark" ? "☀ Day" : "🌙 Night"}
+          </button>
+        </div>
       </div>
 
       <TimelineBar

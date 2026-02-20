@@ -10,7 +10,20 @@
   --muted: #94a3b8;
   --accent: #6366f1;
   --accent2: #818cf8;
+  --shadow: rgba(0, 0, 0, 0.4);
   font-size: 14px;
+}
+
+[data-theme="light"] {
+  --bg: #f0f2f8;
+  --surface: #ffffff;
+  --surface2: #eef0f8;
+  --border: #d1d5e8;
+  --text: #1e2035;
+  --muted: #5a6380;
+  --accent: #4f52d6;
+  --accent2: #5558e8;
+  --shadow: rgba(0, 0, 0, 0.12);
 }
 
 body {
@@ -108,6 +121,28 @@ body {
   color: #fff;
 }
 
+/* ── Theme toggle button ─────────────────────────────────────────────────── */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+
+.theme-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent2);
+}
+
 /* ── Preset scenario buttons ─────────────────────────────────────────────── */
 .preset-section {
   margin-bottom: 18px;
@@ -135,7 +170,7 @@ body {
 
 .preset-btn:hover {
   border-color: var(--accent);
-  background: #1e2438;
+  background: var(--surface2);
 }
 
 .preset-btn.active {
@@ -152,7 +187,7 @@ body {
 .preset-name {
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--fg);
+  color: var(--text);
   line-height: 1.2;
 }
 
@@ -232,8 +267,8 @@ body {
 
 .raw-data-table td {
   padding: 3px 8px 3px 0;
-  color: var(--fg);
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
 }
 
 .raw-data-table tr:last-child td {
@@ -1187,7 +1222,7 @@ body {
   background: transparent;
   border: 1px solid var(--border);
   border-radius: 6px;
-  color: var(--fg);
+  color: var(--text);
   font-size: 0.95rem;
   width: 32px;
   height: 32px;

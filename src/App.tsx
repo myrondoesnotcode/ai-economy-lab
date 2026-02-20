@@ -63,6 +63,9 @@ export default function App() {
   const [mode, setMode] = useState<Mode>(() =>
     (localStorage.getItem("appMode") as Mode | null) ?? "simple"
   )
+  const [theme, setTheme] = useState<"dark" | "light">(() =>
+    (localStorage.getItem("appTheme") as "dark" | "light" | null) ?? "dark"
+  )
 
   const handleModeToggle = useCallback(() => {
     setMode(prev => {
@@ -71,6 +74,20 @@ export default function App() {
       return next
     })
   }, [])
+
+  const handleThemeToggle = useCallback(() => {
+    setTheme(prev => {
+      const next = prev === "dark" ? "light" : "dark"
+      localStorage.setItem("appTheme", next)
+      document.documentElement.setAttribute("data-theme", next)
+      return next
+    })
+  }, [])
+
+  // Apply theme to <html> on mount and changes
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme)
+  }, [theme])
 
   // Ref to always access latest viewIndex + history length inside interval
   const viewIndexRef = useRef(viewIndex)
@@ -149,7 +166,7 @@ export default function App() {
   const visibleHistory = history.slice(0, viewIndex + 1)
 
   return (
-    <div className="app-layout">
+    <div className="app-layout" data-theme={theme}>
       {/* Mobile controls toggle */}
       <button
         className="mobile-panel-toggle"
@@ -178,10 +195,12 @@ export default function App() {
           playing={playing}
           currentHorizon={horizon}
           mode={mode}
+          theme={theme}
           onScrub={handleScrub}
           onPlayPause={handlePlayPause}
           onJumpToEnd={handleJumpToEnd}
           onHorizonChange={handleHorizonChange}
+          onThemeToggle={handleThemeToggle}
         />
         <div className="bottom-actions">
           <button className="reset-btn" onClick={handleReset}>↺ Reset to Defaults</button>
