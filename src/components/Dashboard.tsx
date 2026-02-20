@@ -184,7 +184,7 @@ export function Dashboard({
         inequalityPenalty={inequalityPenalty}
       />
 
-      <Charts history={history} />
+      <Charts history={history} theme={theme} />
 
       {mode === "expert" && <RawDataCard state={latest} />}
 

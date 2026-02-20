@@ -8,6 +8,7 @@ import { InfoPanel } from "./InfoPanel"
 
 interface Props {
   history: SimulationState[]
+  theme?: "dark" | "light"
 }
 
 const COLORS = {
@@ -16,8 +17,18 @@ const COLORS = {
   stability: "#22c55e",
 }
 
-export function Charts({ history }: Props) {
+export function Charts({ history, theme = "dark" }: Props) {
   const latest = history[history.length - 1]
+
+  const isLight = theme === "light"
+  const tickColor = isLight ? "#374151" : "#9ca3af"
+  const gridColor = isLight ? "#d1d5db" : "#374151"
+  const tooltipBg = isLight ? "#ffffff" : "#1f2937"
+  const tooltipBorder = isLight ? "#d1d5db" : "#374151"
+  const tooltipLabel = isLight ? "#111827" : "#f9fafb"
+  const barBaseline = isLight ? "#9ca3af" : "#374151"
+  const yAxisTickColor = isLight ? "#374151" : "#d1d5db"
+  const legendColor = isLight ? "#374151" : "#9ca3af"
 
   // Employment bar chart data — keep full name for tooltip, truncated for axis
   const employmentData = latest.occupations.map(o => {
@@ -49,15 +60,15 @@ export function Charts({ history }: Props) {
     const displayName = entry?.fullName ?? label ?? ""
     return (
       <div style={{
-        background: "#1f2937",
-        border: "1px solid #374151",
+        background: tooltipBg,
+        border: `1px solid ${tooltipBorder}`,
         borderRadius: 6,
         padding: "8px 12px",
         fontSize: 12,
       }}>
-        <p style={{ color: "#f9fafb", marginBottom: 6, fontWeight: 600 }}>{displayName}</p>
+        <p style={{ color: tooltipLabel, marginBottom: 6, fontWeight: 600 }}>{displayName}</p>
         {payload.map(p => (
-          <p key={p.name} style={{ color: "#d1d5db", margin: "2px 0" }}>
+          <p key={p.name} style={{ color: tickColor, margin: "2px 0" }}>
             {p.name}: <span style={{ color: p.fill, fontWeight: 600 }}>{p.value ?? 0}M</span>
           </p>
         ))}
@@ -87,19 +98,19 @@ export function Charts({ history }: Props) {
             <XAxis
               type="number"
               domain={[0, 2]}
-              tick={{ fontSize: 11, fill: "#9ca3af" }}
-              label={{ value: "workers (millions)", position: "insideBottomRight", offset: -4, fontSize: 10, fill: "#6b7280" }}
+              tick={{ fontSize: 11, fill: tickColor }}
+              label={{ value: "workers (millions)", position: "insideBottomRight", offset: -4, fontSize: 10, fill: tickColor }}
             />
             <YAxis
               type="category"
               dataKey="name"
               width={210}
-              tick={{ fontSize: 10, fill: "#d1d5db" }}
+              tick={{ fontSize: 10, fill: yAxisTickColor }}
             />
             <Tooltip content={<BarTooltip />} />
-            <Bar dataKey="baseline" fill="#374151" name="Baseline" radius={[0, 2, 2, 0]} />
+            <Bar dataKey="baseline" fill={barBaseline} name="Baseline" radius={[0, 2, 2, 0]} />
             <Bar dataKey="employment" fill="#6366f1" name="Current" radius={[0, 2, 2, 0]} />
-            <Legend wrapperStyle={{ fontSize: 11, color: "#9ca3af" }} />
+            <Legend wrapperStyle={{ fontSize: 11, color: legendColor }} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -120,12 +131,12 @@ export function Charts({ history }: Props) {
         </div>
         <ResponsiveContainer width="100%" height={200}>
           <LineChart data={timeData} margin={{ left: 0, right: 20, top: 5, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-            <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#9ca3af" }} />
-            <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} domain={["auto", "auto"]} />
+            <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+            <XAxis dataKey="year" tick={{ fontSize: 11, fill: tickColor }} />
+            <YAxis tick={{ fontSize: 11, fill: tickColor }} domain={["auto", "auto"]} />
             <Tooltip
-              contentStyle={{ background: "#1f2937", border: "1px solid #374151", borderRadius: 6 }}
-              labelStyle={{ color: "#f9fafb" }}
+              contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 6 }}
+              labelStyle={{ color: tooltipLabel }}
               itemStyle={{ color: COLORS.gdp }}
             />
             <Line
@@ -161,12 +172,12 @@ export function Charts({ history }: Props) {
         </div>
         <ResponsiveContainer width="100%" height={200}>
           <LineChart data={timeData} margin={{ left: 0, right: 20, top: 5, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-            <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#9ca3af" }} />
-            <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} domain={[1.0, "auto"]} />
+            <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+            <XAxis dataKey="year" tick={{ fontSize: 11, fill: tickColor }} />
+            <YAxis tick={{ fontSize: 11, fill: tickColor }} domain={[1.0, "auto"]} />
             <Tooltip
-              contentStyle={{ background: "#1f2937", border: "1px solid #374151", borderRadius: 6 }}
-              labelStyle={{ color: "#f9fafb" }}
+              contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 6 }}
+              labelStyle={{ color: tooltipLabel }}
               itemStyle={{ color: COLORS.techLayoff }}
             />
             <Line
@@ -204,12 +215,12 @@ export function Charts({ history }: Props) {
         </div>
         <ResponsiveContainer width="100%" height={200}>
           <LineChart data={timeData} margin={{ left: 0, right: 20, top: 5, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-            <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#9ca3af" }} />
-            <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} domain={[0, 100]} />
+            <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+            <XAxis dataKey="year" tick={{ fontSize: 11, fill: tickColor }} />
+            <YAxis tick={{ fontSize: 11, fill: tickColor }} domain={[0, 100]} />
             <Tooltip
-              contentStyle={{ background: "#1f2937", border: "1px solid #374151", borderRadius: 6 }}
-              labelStyle={{ color: "#f9fafb" }}
+              contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 6 }}
+              labelStyle={{ color: tooltipLabel }}
               itemStyle={{ color: COLORS.stability }}
             />
             <Line
