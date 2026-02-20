@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from "react"
 import type { SliderInputs } from "./engine/types"
 import { runSimulation } from "./engine/simulate"
 import { ControlPanel } from "./components/ControlPanel"
+import type { Mode } from "./components/ControlPanel"
 import { Dashboard } from "./components/Dashboard"
 import { Chatbot } from "./components/Chatbot"
 import rawParams from "./data/modelParams.json"
@@ -59,6 +60,17 @@ export default function App() {
   const [viewIndex, setViewIndex] = useState(DEFAULT_HORIZON)
   const [playing, setPlaying] = useState(false)
   const [panelOpen, setPanelOpen] = useState(false)
+  const [mode, setMode] = useState<Mode>(() =>
+    (localStorage.getItem("appMode") as Mode | null) ?? "simple"
+  )
+
+  const handleModeToggle = useCallback(() => {
+    setMode(prev => {
+      const next: Mode = prev === "simple" ? "expert" : "simple"
+      localStorage.setItem("appMode", next)
+      return next
+    })
+  }, [])
 
   // Ref to always access latest viewIndex + history length inside interval
   const viewIndexRef = useRef(viewIndex)
@@ -148,7 +160,13 @@ export default function App() {
       </button>
 
       <div className={`control-panel-wrapper${panelOpen ? " panel-open" : ""}`}>
-        <ControlPanel sliders={sliders} params={params} onChange={handleSliderChange} />
+        <ControlPanel
+          sliders={sliders}
+          params={params}
+          onChange={handleSliderChange}
+          mode={mode}
+          onModeToggle={handleModeToggle}
+        />
       </div>
 
       <div className="dashboard-wrapper" onClick={() => setPanelOpen(false)}>
@@ -159,6 +177,7 @@ export default function App() {
           totalYears={history.length - 1}
           playing={playing}
           currentHorizon={horizon}
+          mode={mode}
           onScrub={handleScrub}
           onPlayPause={handlePlayPause}
           onJumpToEnd={handleJumpToEnd}

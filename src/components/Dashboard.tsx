@@ -4,6 +4,8 @@ import { Charts } from "./Charts"
 import { EventLog } from "./EventLog"
 import { InfoPanel } from "./InfoPanel"
 import { TimelineBar } from "./TimelineBar"
+import { RawDataCard } from "./RawDataCard"
+import type { Mode } from "./ControlPanel"
 
 interface Props {
   history: SimulationState[]
@@ -12,6 +14,7 @@ interface Props {
   totalYears: number
   playing: boolean
   currentHorizon: number
+  mode: Mode
   onScrub: (i: number) => void
   onPlayPause: () => void
   onJumpToEnd: () => void
@@ -47,6 +50,7 @@ export function Dashboard({
   totalYears,
   playing,
   currentHorizon,
+  mode,
   onScrub,
   onPlayPause,
   onJumpToEnd,
@@ -172,6 +176,8 @@ export function Dashboard({
       />
 
       <Charts history={history} />
+
+      {mode === "expert" && <RawDataCard state={latest} />}
 
       <EventLog events={latest.eventLog} />
     </main>

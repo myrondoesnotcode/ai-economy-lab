@@ -70,11 +70,14 @@ export type ModelParams = {
   sliders: {
     [key: string]: {
       label: string
+      simpleLabel?: string
       min: number
       max: number
       step: number
       default: number
       tooltip: string
+      simpleTooltip?: string
+      simpleSteps?: string[]
     }
   }
 }

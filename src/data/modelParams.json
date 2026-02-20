@@ -27,75 +27,102 @@
   "sliders": {
     "aiCapability": {
       "label": "AI Capability",
+      "simpleLabel": "How powerful is AI?",
       "min": 0,
       "max": 1,
       "step": 0.01,
       "default": 0.3,
-      "tooltip": "Overall power of AI systems. Higher values accelerate automation of tech roles and increase wage gains for AI-complementary positions."
+      "tooltip": "Overall power of AI systems. Higher values accelerate automation of tech roles and increase wage gains for AI-complementary positions.",
+      "simpleTooltip": "How capable AI is at doing tech jobs — from basic tools to full automation.",
+      "simpleSteps": ["None", "Low", "Medium", "High", "Maximum"]
     },
     "adoptionSpeed": {
       "label": "Adoption Speed",
+      "simpleLabel": "How fast are companies adopting AI?",
       "min": 0,
       "max": 1,
       "step": 0.01,
       "default": 0.4,
-      "tooltip": "How quickly tech companies deploy AI tools. Drives effective automation rate alongside AI capability."
+      "tooltip": "How quickly tech companies deploy AI tools. Drives effective automation rate alongside AI capability.",
+      "simpleTooltip": "How quickly tech companies are actually rolling out AI tools in their workflows.",
+      "simpleSteps": ["None", "Slow", "Moderate", "Fast", "Rapid"]
     },
     "regulation": {
       "label": "Regulation",
+      "simpleLabel": "How much does government intervene?",
       "min": 0,
       "max": 1,
       "step": 0.01,
       "default": 0.3,
-      "tooltip": "Government AI regulation stringency. Slows adoption and reduces tech job displacement."
+      "tooltip": "Government AI regulation stringency. Slows adoption and reduces tech job displacement.",
+      "simpleTooltip": "How aggressively the government regulates AI — slowing its rollout and protecting workers.",
+      "simpleSteps": ["None", "Light", "Moderate", "Strong", "Heavy"]
     },
     "retraining": {
       "label": "Retraining Programs",
+      "simpleLabel": "How much job retraining is available?",
       "min": 0,
       "max": 1,
       "step": 0.01,
       "default": 0.2,
-      "tooltip": "Investment in worker upskilling. Reduces job loss rate and raises the employment floor — tech workers who retrain find new roles rather than staying unemployed."
+      "tooltip": "Investment in worker upskilling. Reduces job loss rate and raises the employment floor — tech workers who retrain find new roles rather than staying unemployed.",
+      "simpleTooltip": "How much investment goes into helping displaced workers learn new skills and find new jobs.",
+      "simpleSteps": ["None", "Little", "Some", "A lot", "Maximum"]
     },
     "transfers": {
       "label": "Social Transfers",
+      "simpleLabel": "Financial support for displaced workers?",
       "min": 0,
       "max": 1,
       "step": 0.01,
       "default": 0.2,
-      "tooltip": "Government transfer payments (UBI-style). Compresses inequality, funds retraining pipelines for displaced tech workers (reduces the stability hit from layoff waves, not the layoffs themselves), and stabilizes household spending."
+      "tooltip": "Government transfer payments (UBI-style). Compresses inequality, funds retraining pipelines for displaced tech workers (reduces the stability hit from layoff waves, not the layoffs themselves), and stabilizes household spending.",
+      "simpleTooltip": "Government payments (like UBI) to workers who lost their jobs — keeping them afloat while they transition.",
+      "simpleSteps": ["None", "Little", "Some", "Generous", "Universal"]
     },
     "laborProtection": {
       "label": "Labor Protections",
+      "simpleLabel": "How strong are worker protections?",
       "min": 0,
       "max": 1,
       "step": 0.01,
       "default": 0.3,
-      "tooltip": "Strength of labor laws against layoffs. Reduces per-year job loss rate in the tech sector."
+      "tooltip": "Strength of labor laws against layoffs. Reduces per-year job loss rate in the tech sector.",
+      "simpleTooltip": "How hard it is for companies to lay off tech workers — legal protections, severance requirements, etc.",
+      "simpleSteps": ["None", "Weak", "Moderate", "Strong", "Very strong"]
     },
     "corporateConcentration": {
       "label": "Corporate Concentration",
+      "simpleLabel": "How much do big tech firms dominate?",
       "min": 0,
       "max": 1,
       "step": 0.01,
       "default": 0.4,
-      "tooltip": "Market power of large tech firms. Suppresses wage growth and increases inequality as fewer companies capture more of the AI productivity gains."
+      "tooltip": "Market power of large tech firms. Suppresses wage growth and increases inequality as fewer companies capture more of the AI productivity gains.",
+      "simpleTooltip": "Whether a few giant companies control most of tech — which concentrates AI gains at the top.",
+      "simpleSteps": ["None", "Low", "Moderate", "High", "Monopoly"]
     },
     "openSourceAccess": {
       "label": "Open Source AI Access",
+      "simpleLabel": "How open/available are AI tools?",
       "min": -0.5,
       "max": 0.5,
       "step": 0.01,
       "default": 0.0,
-      "tooltip": "Availability of open-source AI models. Positive = widely available (lowers barrier to automation, accelerates displacement of mid-tier tech roles). Negative = restricted/proprietary only (slows displacement but concentrates AI power among large firms)."
+      "tooltip": "Availability of open-source AI models. Positive = widely available (lowers barrier to automation, accelerates displacement of mid-tier tech roles). Negative = restricted/proprietary only (slows displacement but concentrates AI power among large firms).",
+      "simpleTooltip": "Whether AI is locked behind big companies or freely available to anyone — which affects who gets disrupted and how fast.",
+      "simpleSteps": ["Locked down", "Mostly proprietary", "Mixed", "Mostly open", "Fully open"]
     },
     "talentPipelineStrength": {
       "label": "Talent Pipeline Strength",
+      "simpleLabel": "How strong is the tech talent pipeline?",
       "min": 0,
       "max": 1,
       "step": 0.01,
       "default": 0.5,
-      "tooltip": "Robustness of tech talent supply (universities, bootcamps, retraining programs). Higher values dampen tech layoff spirals when infrastructure roles are displaced — new talent absorbs the gaps faster."
+      "tooltip": "Robustness of tech talent supply (universities, bootcamps, retraining programs). Higher values dampen tech layoff spirals when infrastructure roles are displaced — new talent absorbs the gaps faster.",
+      "simpleTooltip": "How many new skilled tech workers are entering the workforce through schools, bootcamps, and training programs.",
+      "simpleSteps": ["Collapsed", "Weak", "Moderate", "Strong", "Thriving"]
     }
   }
 }
